@@ -1,16 +1,71 @@
-# React + Vite
+# 🧪 FormuLab
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+O **FormuLab** é uma aplicação web desenvolvida para a centralização, organização e consulta rápida de informações sobre formulações químicas e produtos de limpeza.
 
-Currently, two official plugins are available:
+A interface foi projetada para proporcionar uma experiência intuitiva na pesquisa de matérias-primas, consulta de dosagens, gerenciamento de formulações e acompanhamento do histórico de alterações.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> 🎓 Projeto desenvolvido no âmbito da disciplina **Projeto Integrador II — UNIVESP**.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🎯 Funcionalidades
 
-## Expanding the Oxlint configuration
+### 📥 Cadastro de Formulações
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- Cadastro de novas formulações;
+- Importação de arquivos **PDF**, **Excel (`.xlsx`, `.csv`)** e **Imagens (`.png`, `.jpg`)**;
+- Registro de composição, dosagens e orientações técnicas.
+
+### 🔍 Busca de Formulações
+
+Sistema de pesquisa com filtros para facilitar a localização das formulações por:
+
+- Ingrediente / Matéria-prima;
+- Nome do produto;
+- Laboratório;
+- Tipo de arquivo.
+
+### ✏️ Gerenciamento de Formulações
+
+- Visualização das formulações cadastradas;
+- Edição de informações;
+- Atualização dos dados;
+- Remoção de registros.
+
+### 📜 Histórico de Alterações
+
+Visualização das alterações realizadas nas formulações, permitindo acompanhar:
+
+- Data da alteração;
+- Responsável;
+- Informações modificadas;
+- Histórico de versões.
+
+---
+
+## 🛠️ Tecnologias
+
+- **React** — desenvolvimento da interface e componentes;
+- **Vite** — ambiente de desenvolvimento e build;
+- **Tailwind CSS** — estilização e responsividade;
+- **Lucide React** — biblioteca de ícones.
+
+---
+
+## 🎨 Interface
+
+A interface do FormuLab foi desenvolvida com foco em:
+
+- Usabilidade;
+- Organização das informações;
+- Navegação intuitiva;
+- Responsividade;
+- Consistência visual.
+
+---
+
+## 🎓 Projeto Acadêmico
+
+O FormuLab foi desenvolvido como parte do **Projeto Integrador II da UNIVESP**, aplicando conceitos de desenvolvimento de interfaces, organização de dados e experiência do usuário na construção de uma solução voltada ao gerenciamento de formulações.
+
+---
