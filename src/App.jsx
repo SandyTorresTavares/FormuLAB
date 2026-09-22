@@ -23,7 +23,8 @@ import {
   X,
   Clock,
   User,
-  ArrowRight
+  ArrowRight,
+  Menu
 } from 'lucide-react';
 
 const LogoFormulab = ({ className = "w-10 h-10" }) => (
@@ -32,6 +33,7 @@ const LogoFormulab = ({ className = "w-10 h-10" }) => (
     viewBox="0 0 220 220"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
   >
     <defs>
       {/* Gradiente principal do logo */}
@@ -62,11 +64,7 @@ const LogoFormulab = ({ className = "w-10 h-10" }) => (
       </linearGradient>
     </defs>
 
-    {/* =====================================================
-        FRASCO
-       ===================================================== */}
-
-    {/* Gargalo / boca */}
+    {/* FRASCO */}
     <path
       d="
         M73 48
@@ -83,7 +81,6 @@ const LogoFormulab = ({ className = "w-10 h-10" }) => (
       strokeLinejoin="round"
     />
 
-    {/* Corpo do frasco */}
     <path
       d="
         M78 48
@@ -116,7 +113,6 @@ const LogoFormulab = ({ className = "w-10 h-10" }) => (
       strokeLinejoin="round"
     />
 
-    {/* Pequeno detalhe central do gargalo */}
     <path
       d="M78 48 H142"
       stroke="url(#formulabGradient)"
@@ -124,22 +120,15 @@ const LogoFormulab = ({ className = "w-10 h-10" }) => (
       strokeLinecap="round"
     />
 
-    {/* =====================================================
-        MOLÉCULA PRINCIPAL
-       ===================================================== */}
-
-    {/* Ligações */}
+    {/* MOLÉCULA PRINCIPAL */}
     <g
       stroke="url(#moleculeGradient)"
       strokeWidth="6"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {/* molécula interna */}
       <path d="M104 89 L118 119 L94 138" />
       <path d="M118 119 L143 102" />
-
-      {/* molécula superior/direita */}
       <path d="M118 119 L108 83" />
       <path d="M118 119 L145 139" />
       <path d="M143 102 L158 82" />
@@ -147,32 +136,16 @@ const LogoFormulab = ({ className = "w-10 h-10" }) => (
       <path d="M145 139 L170 124" />
     </g>
 
-    {/* Átomos */}
     <circle cx="104" cy="89" r="10" fill="#15BEC6" />
-
-    <circle
-      cx="118"
-      cy="119"
-      r="15"
-      fill="url(#moleculeGradient)"
-    />
-
+    <circle cx="118" cy="119" r="15" fill="url(#moleculeGradient)" />
     <circle cx="94" cy="138" r="7" fill="#18BEC7" />
-
     <circle cx="143" cy="102" r="8" fill="#A977DB" />
-
     <circle cx="158" cy="82" r="7" fill="#A977DB" />
-
     <circle cx="178" cy="68" r="6" fill="#B477DC" />
-
     <circle cx="145" cy="139" r="7" fill="#A977DB" />
-
     <circle cx="170" cy="124" r="6" fill="#B477DC" />
 
-    {/* =====================================================
-        HEXÁGONO SUPERIOR DIREITO
-       ===================================================== */}
-
+    {/* HEXÁGONOS */}
     <path
       d="
         M166 48
@@ -188,10 +161,6 @@ const LogoFormulab = ({ className = "w-10 h-10" }) => (
       strokeWidth="6"
       strokeLinejoin="round"
     />
-
-    {/* =====================================================
-        HEXÁGONO DIREITO
-       ===================================================== */}
 
     <path
       d="
@@ -209,57 +178,26 @@ const LogoFormulab = ({ className = "w-10 h-10" }) => (
       strokeLinejoin="round"
     />
 
-    {/* Ligações dos hexágonos */}
-    <path
-      d="M158 82 L166 63"
-      stroke="#A977DB"
-      strokeWidth="6"
-      strokeLinecap="round"
-    />
+    <path d="M158 82 L166 63" stroke="#A977DB" strokeWidth="6" strokeLinecap="round" />
+    <path d="M170 124 L169 106" stroke="#A977DB" strokeWidth="6" strokeLinecap="round" />
 
-    <path
-      d="M170 124 L169 106"
-      stroke="#A977DB"
-      strokeWidth="6"
-      strokeLinecap="round"
-    />
-
-    {/* =====================================================
-        BOLHAS DO LÍQUIDO
-       ===================================================== */}
-
+    {/* BOLHAS */}
     <circle cx="72" cy="143" r="3.5" fill="#16BEC7" />
     <circle cx="82" cy="151" r="2.5" fill="#16BEC7" />
     <circle cx="66" cy="157" r="2.5" fill="#16BEC7" />
-
     <circle cx="91" cy="121" r="3" fill="#16BEC7" />
     <circle cx="79" cy="132" r="2" fill="#16BEC7" />
-
     <circle cx="127" cy="151" r="3.5" fill="#18BFC7" />
     <circle cx="137" cy="159" r="2.5" fill="#B477DC" />
-
-    {/* Bolha maior branca característica */}
-    <circle
-      cx="119"
-      cy="151"
-      r="8"
-      fill="white"
-    />
-
-    <circle
-      cx="119"
-      cy="151"
-      r="4"
-      fill="#B477DC"
-      opacity="0.9"
-    />
+    <circle cx="119" cy="151" r="8" fill="white" />
+    <circle cx="119" cy="151" r="4" fill="#B477DC" opacity="0.9" />
   </svg>
 );
-
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('cadastrar'); // 'cadastrar' | 'buscar' | 'gerenciar' | 'revisadas'
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedFormula, setSelectedFormula] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -349,10 +287,8 @@ export default function App() {
     e.preventDefault();
     if (!editingItem) return;
 
-    // Atualiza na lista
     setFormulations(formulations.map(f => f.id === editingItem.id ? editingItem : f));
 
-    // Adiciona log de alteração
     const newLog = {
       id: Date.now(),
       formulaName: editingItem.name,
@@ -381,12 +317,11 @@ export default function App() {
   });
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
+    <div className="flex flex-col md:flex-row h-screen bg-slate-50 font-sans text-slate-800">
       
-      {/* SIDEBAR LATERAL COM DESIGN REFINADO */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 shadow-xs">
+      {/* SIDEBAR LATERAL DESKTOP */}
+      <aside className="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col justify-between p-4 shadow-xs">
         <div>
-          {/* Logo e Tipografia Oficial */}
           <div className="flex items-center gap-3 px-2 py-3 mb-6">
             <LogoFormulab className="w-11 h-11 flex-shrink-0" />
             <div>
@@ -399,143 +334,209 @@ export default function App() {
             </div>
           </div>
 
-          {/* Menus de Navegação Unificados */}
-          <nav className="space-y-1.5">
+          <nav className="space-y-1.5" aria-label="Navegação Principal Desktop">
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Painel Geral</p>
             
             <button
               onClick={() => setActiveTab('cadastrar')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                 activeTab === 'cadastrar'
                   ? 'bg-purple-100 text-purple-900 shadow-xs'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              <PlusCircle className="w-4 h-4 text-purple-600" />
-              Cadastrar Nova Formulação
+              <PlusCircle className="w-4 h-4 text-purple-600" aria-hidden="true" />
+              <span>Cadastrar Nova Formulação</span>
             </button>
 
             <button
               onClick={() => setActiveTab('buscar')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                 activeTab === 'buscar'
                   ? 'bg-purple-100 text-purple-900 shadow-xs'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              <Search className="w-4 h-4 text-purple-600" />
-              Buscar Formulações
+              <Search className="w-4 h-4 text-purple-600" aria-hidden="true" />
+              <span>Buscar Formulações</span>
             </button>
 
             <button
               onClick={() => setActiveTab('gerenciar')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                 activeTab === 'gerenciar'
                   ? 'bg-purple-100 text-purple-900 shadow-xs'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              <Edit3 className="w-4 h-4 text-purple-600" />
-              Gerenciar Formulações
+              <Edit3 className="w-4 h-4 text-purple-600" aria-hidden="true" />
+              <span>Gerenciar Formulações</span>
             </button>
 
             <button
               onClick={() => setActiveTab('revisadas')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                 activeTab === 'revisadas'
                   ? 'bg-purple-100 text-purple-900 shadow-xs'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              <History className="w-4 h-4 text-purple-600" />
-              Formulações Revisadas
+              <History className="w-4 h-4 text-purple-600" aria-hidden="true" />
+              <span>Formulações Revisadas</span>
             </button>
           </nav>
         </div>
 
-        {/* Rodapé com Créditos */}
         <div className="border-t border-slate-100 pt-3 text-center">
           <p className="text-[11px] text-slate-400 font-medium">
-           <br />
-            <span className="text-slate-700 font-semibold"></span>
+            FormuLab &copy; 2026
           </p>
         </div>
       </aside>
 
-      {/* ÁREA PRINCIPAL */}
+      {/* ÁREA PRINCIPAL COM CABEÇALHO RESPONSIVO */}
       <div className="flex-1 flex flex-col overflow-hidden">
         
-        {/* CABEÇALHO SUPERIOR */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-xs relative">
-          <div className="text-xs text-slate-500 font-medium flex items-center gap-2">
-            <span>FormuLab</span>
-            <span>/</span>
-            <span className="text-slate-800 font-bold capitalize">
-              {activeTab === 'cadastrar' && 'Cadastrar Nova Formulação'}
-              {activeTab === 'buscar' && 'Buscar Formulações'}
-              {activeTab === 'gerenciar' && 'Gerenciar & Editar Formulações'}
-              {activeTab === 'revisadas' && 'Formulações Revisadas e Histórico'}
-            </span>
-          </div>
-
-          {/* PERFIL DO USUÁRIO COM MENU DROPDOWN DE OPÇÕES */}
-          <div className="relative">
-            <button 
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer"
-            >
-              <div className="w-8 h-8 rounded-full bg-teal-500 text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                ST
+        {/* CABEÇALHO SUPERIOR (DESKTOP E MOBILE) */}
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+          <div className="h-16 flex items-center justify-between px-4 sm:px-8">
+            
+            {/* Logo Mobile + Caminho da Página */}
+            <div className="flex items-center gap-3">
+              <div className="md:hidden flex items-center gap-2">
+                <LogoFormulab className="w-8 h-8" />
+                <span className="font-bold text-slate-800 text-base">FormuLab</span>
               </div>
-              <div className="text-left">
-                <p className="text-xs font-bold text-slate-800 leading-none">Sandy Torres Tavares</p>
-                <p className="text-[10px] text-teal-600 font-medium mt-0.5">Status: Ativo</p>
-              </div>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
-            </button>
 
-            {/* Menu Dropdown */}
-            {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2">
-                <div className="px-4 py-2 border-b border-slate-100">
-                  <p className="text-xs font-bold text-slate-800">Sessão Atual</p>
-                  <p className="text-[10px] text-slate-400">Lab Sinergia Química</p>
-                </div>
-                
+              <div className="hidden sm:flex text-xs text-slate-500 font-medium items-center gap-2">
+                <span>FormuLab</span>
+                <span>/</span>
+                <span className="text-slate-800 font-bold capitalize">
+                  {activeTab === 'cadastrar' && 'Cadastrar Nova Formulação'}
+                  {activeTab === 'buscar' && 'Buscar Formulações'}
+                  {activeTab === 'gerenciar' && 'Gerenciar & Editar Formulações'}
+                  {activeTab === 'revisadas' && 'Formulações Revisadas e Histórico'}
+                </span>
+              </div>
+            </div>
+
+            {/* CONTROLES DO USUÁRIO & MENU HAMBÚRGUER */}
+            <div className="flex items-center gap-2">
+              
+              {/* Menu de Perfil */}
+              <div className="relative">
                 <button 
-                  onClick={() => { setIsUserMenuOpen(false); alert("Redirecionando para a tela de troca de usuário..."); }}
-                  className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 font-medium"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  aria-expanded={isUserMenuOpen}
+                  aria-label="Abrir perfil do usuário"
+                  className="flex items-center gap-2 sm:gap-3 bg-slate-50 hover:bg-slate-100 px-2.5 py-1.5 rounded-full border border-slate-200 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                  <UserCheck className="w-4 h-4 text-purple-600" />
-                  Trocar de Usuário
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-teal-500 text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                    ST
+                  </div>
+                  <div className="text-left hidden sm:block">
+                    <p className="text-xs font-bold text-slate-800 leading-none">Sandy Torres Tavares</p>
+                    <p className="text-[10px] text-teal-600 font-medium mt-0.5">Status: Ativo</p>
+                  </div>
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                <button 
-                  onClick={() => { setIsUserMenuOpen(false); alert("Sessão encerrada com sucesso!"); }}
-                  className="w-full text-left px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 font-medium"
-                >
-                  <LogOut className="w-4 h-4 text-rose-600" />
-                  Sair (Logout)
-                </button>
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50">
+                    <div className="px-4 py-2 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-800">Sessão Atual</p>
+                      <p className="text-[10px] text-slate-400">Lab Sinergia Química</p>
+                    </div>
+                    
+                    <button 
+                      onClick={() => { setIsUserMenuOpen(false); alert("Redirecionando para a tela de troca de usuário..."); }}
+                      className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 font-medium"
+                    >
+                      <UserCheck className="w-4 h-4 text-purple-600" />
+                      Trocar de Usuário
+                    </button>
+
+                    <button 
+                      onClick={() => { setIsUserMenuOpen(false); alert("Sessão encerrada com sucesso!"); }}
+                      className="w-full text-left px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 font-medium"
+                    >
+                      <LogOut className="w-4 h-4 text-rose-600" />
+                      Sair (Logout)
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Botão Menu Hambúrguer (Mobile) */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Abrir Menu de Navegação"
+                aria-expanded={mobileMenuOpen}
+                className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+
+            </div>
           </div>
+
+          {/* MENU MOBILE EXPANSÍVEL */}
+          {mobileMenuOpen && (
+            <nav className="md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1" aria-label="Navegação Mobile">
+              <button
+                onClick={() => { setActiveTab('cadastrar'); setMobileMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold ${
+                  activeTab === 'cadastrar' ? 'bg-purple-100 text-purple-900' : 'text-slate-600'
+                }`}
+              >
+                <PlusCircle className="w-4 h-4 text-purple-600" />
+                Cadastrar Nova Formulação
+              </button>
+              <button
+                onClick={() => { setActiveTab('buscar'); setMobileMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold ${
+                  activeTab === 'buscar' ? 'bg-purple-100 text-purple-900' : 'text-slate-600'
+                }`}
+              >
+                <Search className="w-4 h-4 text-purple-600" />
+                Buscar Formulações
+              </button>
+              <button
+                onClick={() => { setActiveTab('gerenciar'); setMobileMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold ${
+                  activeTab === 'gerenciar' ? 'bg-purple-100 text-purple-900' : 'text-slate-600'
+                }`}
+              >
+                <Edit3 className="w-4 h-4 text-purple-600" />
+                Gerenciar Formulações
+              </button>
+              <button
+                onClick={() => { setActiveTab('revisadas'); setMobileMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold ${
+                  activeTab === 'revisadas' ? 'bg-purple-100 text-purple-900' : 'text-slate-600'
+                }`}
+              >
+                <History className="w-4 h-4 text-purple-600" />
+                Formulações Revisadas
+              </button>
+            </nav>
+          )}
         </header>
 
         {/* CONTEÚDO PRINCIPAL (MUDANÇA DE ABAS) */}
-        <main className="flex-1 overflow-y-auto p-8 bg-slate-50">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50">
           
           {/* ABA 1: CADASTRAR NOVA FORMULAÇÃO */}
           {activeTab === 'cadastrar' && (
             <div className="max-w-5xl mx-auto space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">Cadastrar Nova Formulação</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Cadastrar Nova Formulação</h2>
                 <p className="text-xs text-slate-500">Envie o arquivo do seu produto para extração e síntese automática com Inteligência Artificial.</p>
               </div>
 
-              {/* CARD DE AVISO DESTACADO SOBRE PDF ESCANEADO */}
+              {/* CARD DE AVISO */}
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3.5 text-amber-900 shadow-xs">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <div className="text-xs leading-relaxed">
                   <p className="font-bold text-amber-950 mb-0.5">Aviso sobre PDFs Escaneados ou Fotos de Documentos</p>
                   <p className="text-amber-800">
@@ -546,12 +547,10 @@ export default function App() {
 
               {/* OPÇÕES DE CARREGAMENTO */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                {/* Card PDF */}
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2.5 bg-teal-50 text-teal-600 rounded-xl">
-                      <FileText className="w-5 h-5" />
+                      <FileText className="w-5 h-5" aria-hidden="true" />
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-800 text-sm">Documentos PDF</h3>
@@ -559,17 +558,16 @@ export default function App() {
                     </div>
                   </div>
                   <div className="border-2 border-dashed border-slate-200 hover:border-teal-400 rounded-xl p-6 text-center cursor-pointer transition-colors bg-slate-50/50">
-                    <Upload className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <Upload className="w-8 h-8 text-slate-300 mx-auto mb-2" aria-hidden="true" />
                     <p className="text-xs font-semibold text-slate-600">Arraste ou selecione o arquivo PDF</p>
                     <p className="text-[10px] text-slate-400 mt-1">Formato: .pdf</p>
                   </div>
                 </div>
 
-                {/* Card Excel */}
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
-                      <FileSpreadsheet className="w-5 h-5" />
+                      <FileSpreadsheet className="w-5 h-5" aria-hidden="true" />
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-800 text-sm">Planilhas de Composição</h3>
@@ -577,17 +575,16 @@ export default function App() {
                     </div>
                   </div>
                   <div className="border-2 border-dashed border-slate-200 hover:border-amber-400 rounded-xl p-6 text-center cursor-pointer transition-colors bg-slate-50/50">
-                    <Upload className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <Upload className="w-8 h-8 text-slate-300 mx-auto mb-2" aria-hidden="true" />
                     <p className="text-xs font-semibold text-slate-600">Arraste ou selecione a planilha em Excel</p>
                     <p className="text-[10px] text-slate-400 mt-1">Formatos: .xlsx, .csv</p>
                   </div>
                 </div>
 
-                {/* Card Imagens / Rótulos */}
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all md:col-span-2">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
-                      <ImageIcon className="w-5 h-5" />
+                      <ImageIcon className="w-5 h-5" aria-hidden="true" />
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-800 text-sm">Imagens ou Fotos</h3>
@@ -595,35 +592,33 @@ export default function App() {
                     </div>
                   </div>
                   <div className="border-2 border-dashed border-slate-200 hover:border-purple-400 rounded-xl p-6 text-center cursor-pointer transition-colors bg-slate-50/50">
-                    <Upload className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <Upload className="w-8 h-8 text-slate-300 mx-auto mb-2" aria-hidden="true" />
                     <p className="text-xs font-semibold text-slate-600">Arraste ou selecione a imagem</p>
                     <p className="text-[10px] text-slate-400 mt-1">Formatos: .png, .jpg, .jpeg</p>
                   </div>
                 </div>
-
               </div>
 
               <div className="flex justify-end pt-2">
                 <button 
                   onClick={() => alert("Simulação: Arquivo enviado! Processando dados via OCR e IA...")}
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-xs transition-all flex items-center gap-2 text-xs cursor-pointer"
+                  className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                  <Sparkles className="w-4 h-4" />
-                  Processar e Cadastrar com IA
+                  <Sparkles className="w-4 h-4" aria-hidden="true" />
+                  <span>Processar e Cadastrar com IA</span>
                 </button>
               </div>
             </div>
           )}
 
-          {/* ABA 2: BUSCAR FORMULAÇÕES (FILTROS COMPLETOS + FILTRO POR INGREDIENTE) */}
+          {/* ABA 2: BUSCAR FORMULAÇÕES */}
           {activeTab === 'buscar' && (
             <div className="max-w-6xl mx-auto space-y-6">
               
-              {/* Painel de Filtros */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2 font-bold text-xs text-slate-700 tracking-wider uppercase">
-                    <Filter className="w-4 h-4 text-purple-600" />
+                    <Filter className="w-4 h-4 text-purple-600" aria-hidden="true" />
                     Filtros de Pesquisa
                   </div>
                   <button 
@@ -633,35 +628,35 @@ export default function App() {
                       setSelectedLab('Todos os Laboratórios');
                       setSelectedIngredient('');
                     }}
-                    className="text-xs text-slate-400 hover:text-purple-600 transition-colors font-medium"
+                    className="text-xs text-slate-400 hover:text-purple-600 transition-colors font-medium focus:outline-none"
                   >
                     Limpar Filtros
                   </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {/* Busca Geral */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Pesquisa Geral</label>
+                    <label htmlFor="busca-geral" className="block text-[11px] font-bold text-slate-500 mb-1">Pesquisa Geral</label>
                     <div className="relative">
                       <input 
+                        id="busca-geral"
                         type="text" 
                         value={searchGlobal}
                         onChange={(e) => setSearchGlobal(e.target.value)}
                         placeholder="Nome, código ou termo..." 
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-xs focus:outline-none focus:border-purple-500"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-xs focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                       />
-                      <Search className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5" />
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5" aria-hidden="true" />
                     </div>
                   </div>
 
-                  {/* Filtro Produto */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Produto</label>
+                    <label htmlFor="filtro-produto" className="block text-[11px] font-bold text-slate-500 mb-1">Produto</label>
                     <select 
+                      id="filtro-produto"
                       value={selectedProduct}
                       onChange={(e) => setSelectedProduct(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-purple-500 text-slate-700 font-medium"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-purple-500 text-slate-700 font-medium focus:ring-1 focus:ring-purple-500"
                     >
                       <option>Todos os Produtos</option>
                       <option>Pasta de Dente Total Care</option>
@@ -670,13 +665,13 @@ export default function App() {
                     </select>
                   </div>
 
-                  {/* Filtro Laboratório */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Laboratório</label>
+                    <label htmlFor="filtro-lab" className="block text-[11px] font-bold text-slate-500 mb-1">Laboratório</label>
                     <select 
+                      id="filtro-lab"
                       value={selectedLab}
                       onChange={(e) => setSelectedLab(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-purple-500 text-slate-700 font-medium"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-purple-500 text-slate-700 font-medium focus:ring-1 focus:ring-purple-500"
                     >
                       <option>Todos os Laboratórios</option>
                       <option>Lab Sinergia Química</option>
@@ -684,18 +679,18 @@ export default function App() {
                     </select>
                   </div>
 
-                  {/* FILTRO ESPECIAL POR INGREDIENTE / MATÉRIA-PRIMA */}
                   <div>
-                    <label className="block text-[11px] font-bold text-purple-700 mb-1 flex items-center gap-1">
-                      <FlaskConical className="w-3 h-3 text-purple-600" />
+                    <label htmlFor="filtro-ingrediente" className="block text-[11px] font-bold text-purple-700 mb-1 flex items-center gap-1">
+                      <FlaskConical className="w-3 h-3 text-purple-600" aria-hidden="true" />
                       Filtro por Ingrediente
                     </label>
                     <input 
+                      id="filtro-ingrediente"
                       type="text" 
                       value={selectedIngredient}
                       onChange={(e) => setSelectedIngredient(e.target.value)}
                       placeholder="Ex: Flúor, Aloe Vera..." 
-                      className="w-full bg-purple-50/50 border border-purple-200 rounded-lg px-3 py-2 text-xs text-purple-900 focus:outline-none focus:border-purple-500 font-medium"
+                      className="w-full bg-purple-50/50 border border-purple-200 rounded-lg px-3 py-2 text-xs text-purple-900 focus:outline-none focus:border-purple-500 font-medium focus:ring-1 focus:ring-purple-500"
                     />
                   </div>
                 </div>
@@ -714,11 +709,11 @@ export default function App() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                        <th className="p-4">Produto</th>
-                        <th className="p-4">Laboratório</th>
-                        <th className="p-4">Ingredientes Principais</th>
-                        <th className="p-4">Tipo</th>
-                        <th className="p-4">Ação</th>
+                        <th scope="col" className="p-4">Produto</th>
+                        <th scope="col" className="p-4">Laboratório</th>
+                        <th scope="col" className="p-4">Ingredientes Principais</th>
+                        <th scope="col" className="p-4">Tipo</th>
+                        <th scope="col" className="p-4">Ação</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
@@ -748,9 +743,9 @@ export default function App() {
                               </span>
                             </td>
                             <td className="p-4">
-                              <button className="text-purple-600 hover:text-purple-800 font-bold flex items-center gap-1">
-                                <Eye className="w-3.5 h-3.5" />
-                                Detalhes
+                              <button className="text-purple-600 hover:text-purple-800 font-bold flex items-center gap-1 focus:outline-none">
+                                <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+                                <span>Detalhes</span>
                               </button>
                             </td>
                           </tr>
@@ -772,33 +767,41 @@ export default function App() {
                 <div className="bg-white p-6 rounded-2xl border-2 border-purple-200 shadow-md space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2">
-                      <Cpu className="w-5 h-5 text-purple-600" />
-                      <h3 className="font-bold text-slate-800 text-sm">
-                        Síntese Inteligente: {selectedFormula.name}
-                      </h3>
+                      <FlaskConical className="w-5 h-5 text-purple-600" />
+                      <h3 className="font-bold text-slate-800 text-base">{selectedFormula.name}</h3>
                     </div>
-                    <span className="text-xs text-slate-400">Cadastrado em {selectedFormula.date}</span>
+                    <button 
+                      onClick={() => setSelectedFormula(null)}
+                      className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600"
+                      aria-label="Fechar detalhes"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-purple-50/60 p-4 rounded-xl border border-purple-100">
-                      <div className="flex items-center gap-2 text-purple-900 font-bold text-xs mb-2">
-                        <Sparkles className="w-4 h-4 text-purple-600" />
-                        Resumo Técnico Sintetizado
-                      </div>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        {selectedFormula.summary}
-                      </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <p className="font-bold text-slate-500">Laboratório Origem:</p>
+                      <p className="text-slate-800 font-medium">{selectedFormula.lab}</p>
                     </div>
+                    <div>
+                      <p className="font-bold text-slate-500">Data de Registro:</p>
+                      <p className="text-slate-800 font-medium">{selectedFormula.date}</p>
+                    </div>
+                  </div>
 
-                    <div className="bg-slate-900 text-slate-200 p-4 rounded-xl font-mono text-[11px]">
-                      <div className="text-slate-400 font-bold text-[10px] uppercase mb-2">
-                        Conteúdo Bruto Extraído ({selectedFormula.type})
-                      </div>
-                      <p className="whitespace-pre-line leading-relaxed">
-                        {selectedFormula.extractedText}
-                      </p>
-                    </div>
+                  <div className="text-xs space-y-1">
+                    <p className="font-bold text-slate-500">Resumo da Síntese:</p>
+                    <p className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700 leading-relaxed">
+                      {selectedFormula.summary}
+                    </p>
+                  </div>
+
+                  <div className="text-xs space-y-1">
+                    <p className="font-bold text-slate-500">Texto Reconhecido / Extraído:</p>
+                    <pre className="bg-slate-900 text-teal-400 p-3 rounded-xl text-[11px] font-mono whitespace-pre-wrap overflow-x-auto">
+                      {selectedFormula.extractedText}
+                    </pre>
                   </div>
                 </div>
               )}
@@ -806,12 +809,12 @@ export default function App() {
             </div>
           )}
 
-          {/* ABA 3: GERENCIAR FORMULAÇÕES (EDIÇÃO E EXCLUSÃO) */}
+          {/* ABA 3: GERENCIAR FORMULAÇÕES */}
           {activeTab === 'gerenciar' && (
             <div className="max-w-6xl mx-auto space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">Gerenciar Formulações</h2>
-                <p className="text-xs text-slate-500">Edite informações técnicas ou exclua formulações cadastradas na plataforma.</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Gerenciar & Editar Formulações</h2>
+                <p className="text-xs text-slate-500">Altere informações técnicas das fórmulas cadastradas ou exclua registros do banco de dados.</p>
               </div>
 
               <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
@@ -819,34 +822,35 @@ export default function App() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                        <th className="p-4">Produto</th>
-                        <th className="p-4">Laboratório Origem</th>
-                        <th className="p-4">Data do Cadastro</th>
-                        <th className="p-4 text-right">Ações de Gerenciamento</th>
+                        <th scope="col" className="p-4">Produto</th>
+                        <th scope="col" className="p-4">Laboratório</th>
+                        <th scope="col" className="p-4">Data</th>
+                        <th scope="col" className="p-4 text-center">Ações</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                       {formulations.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                           <td className="p-4 font-bold text-slate-800">{item.name}</td>
                           <td className="p-4">{item.lab}</td>
-                          <td className="p-4 text-slate-500">{item.date}</td>
-                          <td className="p-4 text-right space-x-2">
-                            <button 
-                              onClick={() => handleOpenEdit(item)}
-                              className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                              Editar
-                            </button>
-
-                            <button 
-                              onClick={() => handleDeleteFormula(item.id)}
-                              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              Excluir
-                            </button>
+                          <td className="p-4">{item.date}</td>
+                          <td className="p-4 text-center">
+                            <div className="flex justify-center items-center gap-2">
+                              <button 
+                                onClick={() => handleOpenEdit(item)}
+                                aria-label={`Editar ${item.name}`}
+                                className="p-1.5 text-slate-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteFormula(item.id)}
+                                aria-label={`Excluir ${item.name}`}
+                                className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -857,68 +861,46 @@ export default function App() {
             </div>
           )}
 
-          {/* ABA 4: FORMULAÇÕES REVISADAS (HISTÓRICO DE EDIÇÕES) */}
+          {/* ABA 4: FORMULAÇÕES REVISADAS E HISTÓRICO */}
           {activeTab === 'revisadas' && (
             <div className="max-w-6xl mx-auto space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">Formulações Revisadas</h2>
-                <p className="text-xs text-slate-500">Histórico de Edições e log de auditoria detalhando quem alterou, quando e quais foram os ajustes.</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Formulações Revisadas e Histórico</h2>
+                <p className="text-xs text-slate-500">Rastreabilidade completa de todas as modificações e aprovações feitas nos produtos.</p>
               </div>
 
               <div className="space-y-4">
-                {revisionHistory.map((rev) => (
-                  <div key={rev.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs hover:border-purple-200 transition-all">
-                    <div className="flex items-start justify-between border-b border-slate-100 pb-3 mb-4">
+                {revisionHistory.map((log) => (
+                  <div key={log.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 pb-3">
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md">
-                          Alteração de Fórmula
+                        <span className="text-[10px] font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                          Alteração Registrada
                         </span>
-                        <h3 className="font-bold text-slate-800 text-base mt-2">{rev.formulaName}</h3>
+                        <h3 className="font-bold text-slate-800 text-sm mt-1">{log.formulaName}</h3>
                       </div>
-                      <div className="text-right text-xs text-slate-400 flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-slate-400" />
-                        {rev.date}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">Responsável da Edição</p>
-                        <p className="text-xs font-bold text-slate-800 mt-0.5">{rev.changedBy}</p>
-                        <p className="text-[10px] text-slate-500">{rev.role}</p>
-                      </div>
-
-                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">Campo Alterado</p>
-                        <p className="text-xs font-bold text-purple-900 mt-0.5">{rev.fieldChanged}</p>
-                      </div>
-
-                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">Justificativa / Motivo</p>
-                        <p className="text-xs text-slate-700 mt-0.5">{rev.reason}</p>
+                      <div className="flex items-center gap-1.5 text-slate-400 text-xs">
+                        <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span>{log.date}</span>
                       </div>
                     </div>
 
-                    {/* Comparativo de Alteração */}
-                    <div className="bg-slate-900 rounded-xl p-4 text-xs font-mono grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       <div>
-                        <p className="text-rose-400 font-bold text-[10px] uppercase mb-1 flex items-center gap-1">
-                          <X className="w-3 h-3" /> Valor Anterior
-                        </p>
-                        <p className="text-slate-300 bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
-                          {rev.oldValue}
-                        </p>
+                        <p className="font-bold text-slate-500">Responsável:</p>
+                        <p className="text-slate-800">{log.changedBy} ({log.role})</p>
                       </div>
                       <div>
-                        <p className="text-teal-400 font-bold text-[10px] uppercase mb-1 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Novo Valor Revisado
-                        </p>
-                        <p className="text-teal-200 bg-teal-950/40 p-2.5 rounded-lg border border-teal-800/50">
-                          {rev.newValue}
-                        </p>
+                        <p className="font-bold text-slate-500">Campo Alterado:</p>
+                        <p className="text-slate-800 font-semibold">{log.fieldChanged}</p>
                       </div>
                     </div>
 
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                      <p><strong className="text-rose-600">Valor Anterior:</strong> {log.oldValue}</p>
+                      <p><strong className="text-teal-600">Novo Valor:</strong> {log.newValue}</p>
+                      <p><strong className="text-slate-600">Motivo:</strong> {log.reason}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -928,54 +910,68 @@ export default function App() {
         </main>
       </div>
 
-      {/* MODAL DE EDIÇÃO RÁPIDA DE FORMULAÇÃO */}
+      {/* MODAL DE EDIÇÃO */}
       {editModalOpen && editingItem && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-purple-600" />
-                Editar Formulação: {editingItem.name}
-              </h3>
-              <button onClick={() => setEditModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
+              <h3 className="font-bold text-slate-800 text-base">Editar Formulação</h3>
+              <button 
+                onClick={() => setEditModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                aria-label="Fechar Modal"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-600 mb-1">Nome do Produto</label>
+                <label htmlFor="edit-nome" className="block font-bold text-slate-600 mb-1">Nome do Produto</label>
                 <input 
+                  id="edit-nome"
                   type="text" 
                   value={editingItem.name} 
                   onChange={(e) => setEditingItem({...editingItem, name: e.target.value})}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-purple-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-600 mb-1">Resumo Técnico da Fórmula</label>
+                <label htmlFor="edit-lab" className="block font-bold text-slate-600 mb-1">Laboratório</label>
+                <input 
+                  id="edit-lab"
+                  type="text" 
+                  value={editingItem.lab} 
+                  onChange={(e) => setEditingItem({...editingItem, lab: e.target.value})}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-resumo" className="block font-bold text-slate-600 mb-1">Resumo Técnico / Especificações</label>
                 <textarea 
-                  rows="4"
+                  id="edit-resumo"
+                  rows={4}
                   value={editingItem.summary} 
                   onChange={(e) => setEditingItem({...editingItem, summary: e.target.value})}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-purple-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
                 <button 
-                  type="button" 
+                  type="button"
                   onClick={() => setEditModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-semibold"
+                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-semibold"
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-xs"
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold shadow-xs"
                 >
-                  Salvar e Registrar Revisão
+                  Salvar Alterações
                 </button>
               </div>
             </form>
