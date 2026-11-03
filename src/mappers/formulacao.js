@@ -5,7 +5,7 @@
   const rawPreparation = String(record.processo_fabricacao || "");
   const preparationHeading = /^(?:formulação\s+)?(?:processo|procedimento|modo de preparo)\s*:?\s*/im;
   const preparationMatch = rawPreparation.match(preparationHeading);
-  let preparation = record.textoExtraido ? rawPreparation : "";
+  let preparation = record.textoExtraido && rawPreparation.trim() ? rawPreparation : "";
   if (preparationMatch) {
     const start = preparationMatch.index + preparationMatch[0].length;
     const steps = [];
@@ -14,6 +14,18 @@
       if (line.trim()) steps.push(line.trim());
     }
     preparation = steps.join("\n");
+  } else if (!preparation) {
+    const source = rawExtractedText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    const instruction = /^(?:(?:etapa\s+\d+\s*[:.)-]?|\d+[.)]|\d+\s*[-–])\s*)?(?:em (?:um|uma) (?:recipiente|béquer|bequer|tanque|vaso)|adicionar|acrescentar|misturar|agitar|aquecer|resfriar|incorporar|dissolver|homogeneizar|manter|verter|colocar)\b/i;
+    const start = source.findIndex(line => instruction.test(line));
+    if (start >= 0) {
+      const steps = [];
+      for (const line of source.slice(start)) {
+        if (!instruction.test(line)) break;
+        steps.push(line.replace(/^(\d+[.)]|\d+\s*[-–])\s*/, "").trim());
+      }
+      preparation = steps.join("\n");
+    }
   }
   const ingredientData = (Array.isArray(record.ingredientes) ? record.ingredientes : [])
     .map(item => typeof item === "string"
