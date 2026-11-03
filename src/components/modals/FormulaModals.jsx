@@ -1,16 +1,16 @@
-﻿import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 
 const reviewStatuses = ["Em Análise", "Aprovado", "Reprovado"];
 
-export function DetalhesModal({ formula, onClose, onSetStatus, reviewSaving, reviewError }) {
+export function DetalhesModal({ formula, onClose, onSetStatus, reviewSaving, reviewError, canReview = true }) {
   if (!formula) return null;
   return <div className="modal-backdrop fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"><div className="modal-panel bg-white w-full max-w-2xl rounded-2xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
     <div className="p-5 border-b flex justify-between items-center bg-slate-50"><div className="min-w-0"><span className="inline-flex rounded-md bg-purple-50 px-2 py-1 text-[10px] font-semibold text-purple-700">{formula.category}</span><h3 className="mt-2 truncate font-bold">{formula.name}</h3><p className="text-xs text-slate-500 mt-1">{formula.lab}</p></div><button onClick={onClose} className="rounded-lg p-2 text-slate-500 hover:bg-slate-200"><X /></button></div>
     <div className="p-6 overflow-y-auto space-y-5 text-xs">
-      <section className="rounded-xl border border-slate-200 bg-slate-50 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-bold">Revisão técnica</p><p className="mt-1 text-slate-500">A extração não aprova a fórmula automaticamente. A avaliação é feita por uma pessoa.</p></div><span className="rounded-full bg-white px-3 py-1 font-bold text-slate-700">{formula.status}</span></div>
+      {canReview && <section className="rounded-xl border border-slate-200 bg-slate-50 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-bold">Revisão técnica</p><p className="mt-1 text-slate-500">A extração não aprova a fórmula automaticamente. A avaliação é feita por uma pessoa.</p></div><span className="rounded-full bg-white px-3 py-1 font-bold text-slate-700">{formula.status}</span></div>
         <div className="mt-4 flex flex-wrap gap-2">{reviewStatuses.map(status => <button key={status} type="button" disabled={reviewSaving || formula.status === status} onClick={() => onSetStatus(formula, status)} className={`rounded-lg px-3 py-2 text-[11px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${status === "Aprovado" ? "bg-emerald-600 text-white hover:bg-emerald-700" : status === "Reprovado" ? "bg-rose-600 text-white hover:bg-rose-700" : "bg-amber-500 text-white hover:bg-amber-600"}`}>{reviewSaving && formula.status !== status ? "Salvando..." : status === "Em Análise" ? "Iniciar análise" : status}</button>)}</div>
         {reviewError && <p role="alert" className="mt-3 text-rose-700">{reviewError}</p>}
-      </section>
+      </section>}
       <div><b className="uppercase text-[10px] text-slate-500">Resumo</b><p className="bg-slate-50 p-4 rounded-xl mt-2 leading-relaxed">{formula.summary || "Resumo ainda não cadastrado."}</p></div>
       <div><b className="uppercase text-[10px] text-slate-500">Ingredientes e percentuais</b><div className="flex flex-wrap gap-2 mt-2">{formula.ingredients.length > 0 ? formula.ingredients.map((ing, i) => <span key={i} className="bg-purple-50 text-purple-800 border border-purple-100 px-3 py-2 rounded-lg">{ing}</span>) : <p className="text-slate-400">Ingredientes ainda não identificados.</p>}</div></div>
       <div><b className="uppercase text-[10px] text-slate-500">Modo de preparo</b>{formula.preparation ? <ol className="mt-2 list-decimal space-y-2 rounded-xl border border-slate-200 bg-white p-4 pl-9 leading-relaxed text-slate-700">{formula.preparation.split(/\n+/).map((step, index) => step.trim() && <li key={index}>{step.trim()}</li>)}</ol> : <p className="mt-2 rounded-xl bg-slate-50 p-4 text-slate-400">Modo de preparo ainda não identificado. Consulte o texto extraído abaixo.</p>}</div>

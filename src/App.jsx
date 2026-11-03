@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { atualizarFormulacao, excluirFormulacao, excluirFormulacoesEmMassa, importarArquivo, listarFormulacoes } from "./actions/formulacoes.js";
 import { AppHeader, Sidebar } from "./components/layout/AppShell.jsx";
 import CadastroPage from "./components/pages/CadastroPage.jsx";
@@ -7,9 +7,15 @@ import GerenciarPage from "./components/pages/GerenciarPage.jsx";
 import HistoricoPage from "./components/pages/HistoricoPage.jsx";
 import { DetalhesModal, EditarModal } from "./components/modals/FormulaModals.jsx";
 import { navItems } from "./constants/appData.js";
+import AuthPage from "./components/pages/AuthPage.jsx";
+import UsuariosPage from "./components/pages/UsuariosPage.jsx";
+import { obterSessao } from "./actions/auth.js";
+import { getAuthToken, setAuthToken } from "./actions/http.js";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("cadastrar");
+  const [session, setSession] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
   const [formulations, setFormulations] = useState([]);
   const [revisionHistory, setRevisionHistory] = useState([]);
   const [selectedFormula, setSelectedFormula] = useState(null);
@@ -37,6 +43,12 @@ export default function App() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
+    if (!getAuthToken()) { setAuthReady(true); return; }
+    obterSessao().then(result => setSession(result.user)).catch(() => { setAuthToken(null); }).finally(() => setAuthReady(true));
+  }, []);
+
+  useEffect(() => {
+    if (!session) return undefined;
     const controller = new AbortController();
     listarFormulacoes({ signal: controller.signal })
       .then(formulas => {
@@ -46,7 +58,7 @@ export default function App() {
       })
       .catch(error => { if (error.name !== "AbortError") setApiError(error.message || "Falha ao conectar a API."); });
     return () => controller.abort();
-  }, []);
+  }, [session]);
 
   const approvedFormulations = useMemo(() => formulations.filter(item => item.status === "Aprovado"), [formulations]);
   const filteredFormulations = useMemo(() => approvedFormulations.filter(item => {
@@ -204,6 +216,12 @@ export default function App() {
     }
   };
 
+  const availableItems = navItems.filter(item => session?.role === "ADMIN" || (session?.role === "OPERATOR" ? item.id !== "usuarios" : item.id === "buscar"));
+  const handleAuthenticated = result => { setSession(result.user); setActiveTab(result.user.role === "VIEWER" ? "buscar" : "cadastrar"); setFormulations([]); setRevisionHistory([]); setApiError(""); setAuthReady(true); };
+  const handleLogout = () => { setAuthToken(null); setSession(null); setFormulations([]); setRevisionHistory([]); setActiveTab("buscar"); };
+
+  useEffect(() => { if (session && !availableItems.some(item => item.id === activeTab)) setActiveTab(availableItems[0]?.id || "buscar"); }, [session, activeTab]);
+
   const changeTab = tab => {
     setActiveTab(tab);
     setMobileMenuOpen(false);
@@ -211,19 +229,23 @@ export default function App() {
   const pageTitle = navItems.find(item => item.id === activeTab)?.label;
   const statusClass = status => status === "Aprovado" ? "bg-emerald-50 text-emerald-700" : status === "Reprovado" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700";
 
+  if (!authReady) return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-sm text-slate-500">Verificando sessão...</div>;
+  if (!session) return <AuthPage onAuthenticated={handleAuthenticated} />;
+
   return <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col md:flex-row font-sans">
-    <Sidebar activeTab={activeTab} onChange={changeTab} />
+    <Sidebar activeTab={activeTab} onChange={changeTab} items={availableItems} />
     <div className="flex-1 min-w-0 flex flex-col">
-      <AppHeader pageTitle={pageTitle} activeTab={activeTab} onChange={changeTab} mobileMenuOpen={mobileMenuOpen} onToggleMobileMenu={() => setMobileMenuOpen(value => !value)} isUserMenuOpen={isUserMenuOpen} onToggleUserMenu={() => setIsUserMenuOpen(value => !value)} />
+      <AppHeader pageTitle={pageTitle} activeTab={activeTab} onChange={changeTab} mobileMenuOpen={mobileMenuOpen} onToggleMobileMenu={() => setMobileMenuOpen(value => !value)} user={session} onLogout={handleLogout} items={availableItems} />
       <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
         {apiError && <div className="max-w-5xl mx-auto mb-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-xs">{apiError}</div>}
         {activeTab === "cadastrar" && <CadastroPage selectedFile={selectedFile} onFileChange={handleFileChange} onClearFile={() => { setSelectedFile(null); const input = document.getElementById("file-upload"); if (input) input.value = ""; }} newName={newName} onNameChange={event => setNewName(event.target.value)} newCategory={newCategory} onCategoryChange={event => setNewCategory(event.target.value)} newLab={newLab} onLabChange={event => setNewLab(event.target.value)} uploadError={uploadError} uploadSuccess={uploadSuccess} processing={processing} onUpload={handleUpload} />}
         {activeTab === "buscar" && <BuscaPage formulations={approvedFormulations} filteredFormulations={filteredFormulations} searchGlobal={searchGlobal} onSearchChange={setSearchGlobal} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} selectedLab={selectedLab} onLabChange={setSelectedLab} selectedIngredient={selectedIngredient} onIngredientChange={setSelectedIngredient} onResetFilters={resetFilters} onInspect={setSelectedFormula} statusClass={statusClass} />}
         {activeTab === "gerenciar" && <GerenciarPage formulations={formulations} onDelete={handleDelete} onDeleteSelected={handleDeleteSelected} deleting={deleting} selectedIds={selectedIds} onToggleSelected={handleToggleSelected} onToggleAll={handleToggleAll} onInspect={setSelectedFormula} onEdit={handleOpenEdit} statusClass={statusClass} />}
         {activeTab === "revisadas" && <HistoricoPage revisionHistory={revisionHistory} />}
+        {activeTab === "usuarios" && session.role === "ADMIN" && <UsuariosPage />}
       </main>
     </div>
-    <DetalhesModal formula={selectedFormula} onClose={() => { setSelectedFormula(null); setReviewError(""); }} onSetStatus={handleSetReviewStatus} reviewSaving={reviewSaving} reviewError={reviewError} />
+    <DetalhesModal canReview={session.role !== "VIEWER"} formula={selectedFormula} onClose={() => { setSelectedFormula(null); setReviewError(""); }} onSetStatus={handleSetReviewStatus} reviewSaving={reviewSaving} reviewError={reviewError} />
     <EditarModal form={editForm} error={editError} saving={savingEdit} onChange={(field, value) => setEditForm(prev => ({ ...prev, [field]: value }))} onClose={() => { if (!savingEdit) setEditForm(prev => ({ ...prev, item: null })); }} onSave={handleSaveEdit} />
   </div>;
 }
