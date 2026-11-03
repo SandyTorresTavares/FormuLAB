@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { atualizarFormulacao, excluirFormulacao, excluirFormulacoesEmMassa, importarArquivo, listarFormulacoes } from "./actions/formulacoes.js";
-import { AppHeader, Sidebar } from "./components/layout/AppShell.jsx";
+import { AppFooter, AppHeader, Sidebar } from "./components/layout/AppShell.jsx";
 import CadastroPage from "./components/pages/CadastroPage.jsx";
 import BuscaPage from "./components/pages/BuscaPage.jsx";
 import GerenciarPage from "./components/pages/GerenciarPage.jsx";
@@ -240,10 +240,11 @@ export default function App() {
         {apiError && <div className="max-w-5xl mx-auto mb-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-xs">{apiError}</div>}
         {activeTab === "cadastrar" && <CadastroPage selectedFile={selectedFile} onFileChange={handleFileChange} onClearFile={() => { setSelectedFile(null); const input = document.getElementById("file-upload"); if (input) input.value = ""; }} newName={newName} onNameChange={event => setNewName(event.target.value)} newCategory={newCategory} onCategoryChange={event => setNewCategory(event.target.value)} newLab={newLab} onLabChange={event => setNewLab(event.target.value)} uploadError={uploadError} uploadSuccess={uploadSuccess} processing={processing} onUpload={handleUpload} />}
         {activeTab === "buscar" && <BuscaPage formulations={approvedFormulations} filteredFormulations={filteredFormulations} searchGlobal={searchGlobal} onSearchChange={setSearchGlobal} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} selectedLab={selectedLab} onLabChange={setSelectedLab} selectedIngredient={selectedIngredient} onIngredientChange={setSelectedIngredient} onResetFilters={resetFilters} onInspect={setSelectedFormula} statusClass={statusClass} />}
-        {activeTab === "gerenciar" && <GerenciarPage formulations={formulations} onDelete={handleDelete} onDeleteSelected={handleDeleteSelected} deleting={deleting} selectedIds={selectedIds} onToggleSelected={handleToggleSelected} onToggleAll={handleToggleAll} onInspect={setSelectedFormula} onEdit={handleOpenEdit} statusClass={statusClass} />}
+        {activeTab === "gerenciar" && <GerenciarPage canDelete={session.role === "ADMIN"} formulations={formulations} onDelete={handleDelete} onDeleteSelected={handleDeleteSelected} deleting={deleting} selectedIds={selectedIds} onToggleSelected={handleToggleSelected} onToggleAll={handleToggleAll} onInspect={setSelectedFormula} onEdit={handleOpenEdit} statusClass={statusClass} />}
         {activeTab === "revisadas" && <HistoricoPage revisionHistory={revisionHistory} />}
         {activeTab === "usuarios" && session.role === "ADMIN" && <UsuariosPage />}
       </main>
+      <AppFooter />
     </div>
     <DetalhesModal canReview={session.role !== "VIEWER"} formula={selectedFormula} onClose={() => { setSelectedFormula(null); setReviewError(""); }} onSetStatus={handleSetReviewStatus} reviewSaving={reviewSaving} reviewError={reviewError} />
     <EditarModal form={editForm} error={editError} saving={savingEdit} onChange={(field, value) => setEditForm(prev => ({ ...prev, [field]: value }))} onClose={() => { if (!savingEdit) setEditForm(prev => ({ ...prev, item: null })); }} onSave={handleSaveEdit} />

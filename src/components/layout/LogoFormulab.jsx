@@ -1,17 +1,5 @@
-﻿export default function LogoFormulab({ className = "w-10 h-10" }) {
-  return (
-    <svg className={className} viewBox="0 0 220 220" fill="none">
-      <path d="M73 48 H145 C153 48 153 31 144 31 H76 C67 31 67 48 73 48" stroke="#19BEC6" strokeWidth="9" strokeLinecap="round" />
-      <path d="M78 48 V86 C78 100 75 101 71 108 L48 149 C42 160 45 185 73 185 H113" stroke="#16BFC7" strokeWidth="10" strokeLinecap="round" />
-      <path d="M142 48 V86 C142 100 145 101 149 108 L172 149 C178 160 175 185 147 185 H108" stroke="#B477DC" strokeWidth="10" strokeLinecap="round" />
-      <g stroke="#A977DB" strokeWidth="6" strokeLinecap="round">
-        <path d="M104 89 L118 119 L94 138 M118 119 L143 102 M118 119 L145 139" />
-        <path d="M143 102 L158 82 L178 68 M145 139 L170 124" />
-      </g>
-      <circle cx="104" cy="89" r="10" fill="#15BEC6" /><circle cx="118" cy="119" r="15" fill="#A977DB" />
-      <circle cx="94" cy="138" r="7" fill="#18BEC7" /><circle cx="143" cy="102" r="8" fill="#A977DB" />
-      <circle cx="158" cy="82" r="7" fill="#A977DB" /><circle cx="178" cy="68" r="6" fill="#B477DC" />
-      <circle cx="145" cy="139" r="7" fill="#A977DB" /><circle cx="170" cy="124" r="6" fill="#B477DC" />
-    </svg>
-  );
+import logoFormulab from "../../assets/formulab.svg";
+
+export default function LogoFormulab({ className = "w-10 h-10" }) {
+  return <img src={logoFormulab} alt="" aria-hidden="true" className={className} />;
 }

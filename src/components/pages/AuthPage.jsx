@@ -2,6 +2,7 @@ import { useState } from "react";
 import { KeyRound, FlaskConical } from "lucide-react";
 import { entrar, recuperarSenha, registrar } from "../../actions/auth.js";
 import { setAuthToken } from "../../actions/http.js";
+import { AppFooter } from "../layout/AppShell.jsx";
 
 const initial = { name: "", email: "", password: "", recoveryCode: "", newPassword: "" };
 export default function AuthPage({ onAuthenticated }) {
@@ -32,7 +33,7 @@ export default function AuthPage({ onAuthenticated }) {
   const completeRegistration = () => { setAuthToken(pending.token); onAuthenticated(pending); };
   const copyCode = async () => { await navigator.clipboard.writeText(recoveryCode); setCopied(true); };
   const title = mode === "register" ? "Criar conta" : mode === "forgot" ? "Recuperar acesso" : mode === "recovery-done" ? "Senha atualizada" : "Entrar no FormuLab";
-  return <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+  return <div className="min-h-screen bg-slate-50 flex flex-col"><main className="flex flex-1 items-center justify-center p-4">
     <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-xl">
       <div className="mb-6 flex items-center gap-3"><span className="rounded-xl bg-purple-50 p-3 text-purple-600"><FlaskConical /></span><div><h1 className="text-xl font-extrabold">Formu<span className="text-purple-600">Lab</span></h1><p className="text-xs text-slate-500">Acesso ao gerenciamento de formulações</p></div></div>
       <h2 className="text-lg font-bold">{title}</h2>
@@ -45,6 +46,6 @@ export default function AuthPage({ onAuthenticated }) {
       </form>}
       {!pending && mode !== "recovery-done" && <div className="mt-5 flex flex-wrap justify-between gap-3 border-t pt-4 text-xs"><button className="text-purple-700 hover:underline" onClick={() => { setError(""); setMode(mode === "register" ? "login" : "register"); }}> {mode === "register" ? "Já tenho uma conta" : "Criar conta"}</button><button className="text-slate-500 hover:text-purple-700" onClick={() => { setError(""); setMode(mode === "forgot" ? "login" : "forgot"); }}><KeyRound className="mr-1 inline" size={13} />Esqueci a senha</button></div>}
     </section>
-  </main>;
+  </main><AppFooter /></div>;
 }
 function Field({ label, value, onChange, type = "text", ...props }) { return <label className="block text-xs font-semibold text-slate-700">{label}<input {...props} type={type} value={value} onChange={event => onChange(event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100" /></label>; }

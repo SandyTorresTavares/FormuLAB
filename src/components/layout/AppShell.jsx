@@ -17,7 +17,6 @@ export function Sidebar({ activeTab, onChange, items }) {
       <p className="text-[10px] font-bold text-slate-400 uppercase px-3 mb-3">Painel Geral</p>
       <Navigation items={items} activeTab={activeTab} onChange={onChange} />
     </div>
-    <div className="border-t pt-4 text-center text-[11px] text-slate-400">FormuLab © 2026</div>
   </aside>;
 }
 
@@ -30,4 +29,7 @@ export function AppHeader({ pageTitle, activeTab, onChange, mobileMenuOpen, onTo
     </div>
     {mobileMenuOpen && <Navigation mobile items={items} activeTab={activeTab} onChange={onChange} />}
   </header>;
+}
+export function AppFooter() {
+  return <footer className="border-t border-slate-200 bg-white px-4 py-3 text-center text-[11px] text-slate-500">&#169; {new Date().getFullYear()} FormuLab. Todos os direitos reservados.</footer>;
 }
