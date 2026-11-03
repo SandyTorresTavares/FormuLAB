@@ -38,6 +38,7 @@ export const atualizarFormulacao = async (id, formulacao) => {
       laboratorio: formulacao.lab,
       resumo: formulacao.summary,
       status: formulacao.status,
+      processo_fabricacao: formulacao.preparation || "",
       ingredientes: (formulacao.ingredientData || []).map(item => ({ nome: item.name, percentagem: item.percentage }))
     })
   });

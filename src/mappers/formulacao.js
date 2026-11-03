@@ -1,5 +1,20 @@
 ﻿export const mapBackendFormulation = record => {
-  const extractedText = record.processo_fabricacao || "";
+  const rawExtractedText = record.textoExtraido || record.processo_fabricacao || "";
+  const categoryText = String(record.categoriaProduto || "Não categorizado").trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR");
+  const category = categoryText ? categoryText[0].toLocaleUpperCase("pt-BR") + categoryText.slice(1) : "Não categorizado";
+  const rawPreparation = String(record.processo_fabricacao || "");
+  const preparationHeading = /^(?:formulação\s+)?(?:processo|procedimento|modo de preparo)\s*:?\s*/im;
+  const preparationMatch = rawPreparation.match(preparationHeading);
+  let preparation = record.textoExtraido ? rawPreparation : "";
+  if (preparationMatch) {
+    const start = preparationMatch.index + preparationMatch[0].length;
+    const steps = [];
+    for (const line of rawPreparation.slice(start).split(/\r?\n/)) {
+      if (/^(?:slide\s+\d+|principais benef[ií]cios|guia de formulação|versão)\b/i.test(line.trim())) break;
+      if (line.trim()) steps.push(line.trim());
+    }
+    preparation = steps.join("\n");
+  }
   const ingredientData = (Array.isArray(record.ingredientes) ? record.ingredientes : [])
     .map(item => typeof item === "string"
       ? { name: item, percentage: "" }
@@ -18,7 +33,7 @@
   return {
     id: record._id || record.codigo,
     name: record.nome || record.codigo || "Formulação importada",
-    category: record.categoriaProduto || "Não categorizado",
+    category,
     lab: record.laboratorio || "Não informado",
     type: record.tipoArquivo || "Importado",
     date: record.criadoEm ? new Date(record.criadoEm).toLocaleDateString("pt-BR") : new Date().toLocaleDateString("pt-BR"),
@@ -26,7 +41,8 @@
     ingredients,
     ingredientData,
     summary: record.resumo || "",
-    extractedText,
+    extractedText: rawExtractedText,
+    preparation,
     audit: (Array.isArray(record.auditoria) ? record.auditoria : []).map((entry, index) => ({
       id: `${record._id || record.codigo}-${index}-${entry.ocorridoEm || ""}`,
       formulaId: record._id || record.codigo,

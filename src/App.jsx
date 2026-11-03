@@ -8,8 +8,6 @@ import HistoricoPage from "./components/pages/HistoricoPage.jsx";
 import { DetalhesModal, EditarModal } from "./components/modals/FormulaModals.jsx";
 import { navItems } from "./constants/appData.js";
 
-const now = () => new Date().toLocaleString("pt-BR");
-
 export default function App() {
   const [activeTab, setActiveTab] = useState("cadastrar");
   const [formulations, setFormulations] = useState([]);
@@ -30,7 +28,7 @@ export default function App() {
   const [uploadSuccess, setUploadSuccess] = useState("");
   const [processing, setProcessing] = useState(false);
   const [apiError, setApiError] = useState("");
-  const [editForm, setEditForm] = useState({ item: null, name: "", category: "", lab: "", summary: "", status: "", ingredientData: [] });
+  const [editForm, setEditForm] = useState({ item: null, name: "", category: "", lab: "", summary: "", status: "", preparation: "", ingredientData: [] });
   const [savingEdit, setSavingEdit] = useState(false);
   const [editError, setEditError] = useState("");
   const [reviewSaving, setReviewSaving] = useState(false);
@@ -50,17 +48,18 @@ export default function App() {
     return () => controller.abort();
   }, []);
 
-  const filteredFormulations = useMemo(() => formulations.filter(item => {
+  const approvedFormulations = useMemo(() => formulations.filter(item => item.status === "Aprovado"), [formulations]);
+  const filteredFormulations = useMemo(() => approvedFormulations.filter(item => {
     const normalize = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     const term = normalize(searchGlobal.trim());
-    const searchable = [item.name, item.category, item.lab, item.summary, item.extractedText, ...item.ingredients].map(normalize);
+    const searchable = [item.name, item.category, item.lab, item.summary, item.extractedText, item.preparation, ...item.ingredients].map(normalize);
     const globalMatch = !term || searchable.some(value => value.includes(term));
     const categoryMatch = selectedCategory === "Todos" || item.category === selectedCategory;
     const labMatch = selectedLab === "Todos" || item.lab === selectedLab;
     const ingredientTerm = normalize(selectedIngredient.trim());
     const ingredientMatch = !ingredientTerm || item.ingredients.some(ingredient => normalize(ingredient).includes(ingredientTerm));
     return globalMatch && categoryMatch && labMatch && ingredientMatch;
-  }), [formulations, searchGlobal, selectedCategory, selectedLab, selectedIngredient]);
+  }), [approvedFormulations, searchGlobal, selectedCategory, selectedLab, selectedIngredient]);
 
   const resetFilters = () => {
     setSearchGlobal("");
@@ -121,14 +120,14 @@ export default function App() {
 
   const handleOpenEdit = formula => {
     setEditError("");
-    setEditForm({ item: formula, name: formula.name, category: formula.category, lab: formula.lab, summary: formula.summary, status: formula.status, ingredientData: formula.ingredientData.map(item => ({ ...item })) });
+    setEditForm({ item: formula, name: formula.name, category: formula.category, lab: formula.lab, summary: formula.summary, status: formula.status, preparation: formula.preparation || "", ingredientData: formula.ingredientData.map(item => ({ ...item })) });
   };
 
   const handleSaveEdit = async event => {
     event.preventDefault();
     const oldFormula = formulations.find(formula => formula.id === editForm.item?.id);
     if (!oldFormula) return;
-    const updated = { ...oldFormula, name: editForm.name.trim(), category: editForm.category.trim(), lab: editForm.lab.trim(), summary: editForm.summary.trim(), status: editForm.status, ingredientData: editForm.ingredientData };
+    const updated = { ...oldFormula, name: editForm.name.trim(), category: editForm.category.trim(), lab: editForm.lab.trim(), summary: editForm.summary.trim(), status: editForm.status, preparation: editForm.preparation, ingredientData: editForm.ingredientData };
     setSavingEdit(true);
     setEditError("");
     try {
@@ -219,7 +218,7 @@ export default function App() {
       <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
         {apiError && <div className="max-w-5xl mx-auto mb-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-xs">{apiError}</div>}
         {activeTab === "cadastrar" && <CadastroPage selectedFile={selectedFile} onFileChange={handleFileChange} onClearFile={() => { setSelectedFile(null); const input = document.getElementById("file-upload"); if (input) input.value = ""; }} newName={newName} onNameChange={event => setNewName(event.target.value)} newCategory={newCategory} onCategoryChange={event => setNewCategory(event.target.value)} newLab={newLab} onLabChange={event => setNewLab(event.target.value)} uploadError={uploadError} uploadSuccess={uploadSuccess} processing={processing} onUpload={handleUpload} />}
-        {activeTab === "buscar" && <BuscaPage formulations={formulations} filteredFormulations={filteredFormulations} searchGlobal={searchGlobal} onSearchChange={setSearchGlobal} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} selectedLab={selectedLab} onLabChange={setSelectedLab} selectedIngredient={selectedIngredient} onIngredientChange={setSelectedIngredient} onResetFilters={resetFilters} onInspect={setSelectedFormula} statusClass={statusClass} />}
+        {activeTab === "buscar" && <BuscaPage formulations={approvedFormulations} filteredFormulations={filteredFormulations} searchGlobal={searchGlobal} onSearchChange={setSearchGlobal} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} selectedLab={selectedLab} onLabChange={setSelectedLab} selectedIngredient={selectedIngredient} onIngredientChange={setSelectedIngredient} onResetFilters={resetFilters} onInspect={setSelectedFormula} statusClass={statusClass} />}
         {activeTab === "gerenciar" && <GerenciarPage formulations={formulations} onDelete={handleDelete} onDeleteSelected={handleDeleteSelected} deleting={deleting} selectedIds={selectedIds} onToggleSelected={handleToggleSelected} onToggleAll={handleToggleAll} onInspect={setSelectedFormula} onEdit={handleOpenEdit} statusClass={statusClass} />}
         {activeTab === "revisadas" && <HistoricoPage revisionHistory={revisionHistory} />}
       </main>
