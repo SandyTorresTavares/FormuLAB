@@ -1,22 +1,22 @@
-export const mapBackendFormulation = (record) => {
+﻿export const mapBackendFormulation = record => {
   const extractedText = record.processo_fabricacao || "";
   const ingredients = (Array.isArray(record.ingredientes) ? record.ingredientes : [])
-    .map((item) => typeof item === "string"
+    .map(item => typeof item === "string"
       ? item
       : item?.nome
-        ? (item.percentagem == null ? item.nome : item.nome + " (" + item.percentagem + "%)")
+        ? (item.percentagem == null ? item.nome : `${item.nome} (${item.percentagem}%)`)
         : "")
     .filter(Boolean);
 
   return {
     id: record._id || record.codigo,
-    name: record.nome || record.codigo || "Formula\u00e7\u00e3o importada",
-    lab: record.laboratorio || "N\u00e3o informado",
+    name: record.nome || record.codigo || "Formulação importada",
+    lab: record.laboratorio || "Não informado",
     type: record.tipoArquivo || "Importado",
     date: record.criadoEm ? new Date(record.criadoEm).toLocaleDateString("pt-BR") : new Date().toLocaleDateString("pt-BR"),
-    status: record.status || "Aguardando An\u00e1lise",
+    status: record.status || "Aguardando Análise",
     ingredients,
-    summary: record.resumo || extractedText || "Formula\u00e7\u00e3o importada da API.",
+    summary: record.resumo || extractedText || "Formulação importada da API.",
     extractedText
   };
 };

@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
-import { importarArquivo, listarFormulacoes } from "./actions/formulacoes.js";
+import { atualizarFormulacao, importarArquivo, listarFormulacoes } from "./actions/formulacoes.js";
 import { AppHeader, Sidebar } from "./components/layout/AppShell.jsx";
 import CadastroPage from "./components/pages/CadastroPage.jsx";
 import BuscaPage from "./components/pages/BuscaPage.jsx";
@@ -29,6 +29,8 @@ export default function App() {
   const [processing, setProcessing] = useState(false);
   const [apiError, setApiError] = useState("");
   const [editForm, setEditForm] = useState({ item: null, name: "", lab: "", summary: "", status: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -105,21 +107,33 @@ export default function App() {
     }
   };
 
-  const handleOpenEdit = formula => setEditForm({ item: formula, name: formula.name, lab: formula.lab, summary: formula.summary, status: formula.status });
+  const handleOpenEdit = formula => {
+    setEditError("");
+    setEditForm({ item: formula, name: formula.name, lab: formula.lab, summary: formula.summary, status: formula.status });
+  };
 
-  const handleSaveEdit = event => {
+  const handleSaveEdit = async event => {
     event.preventDefault();
     const oldFormula = formulations.find(formula => formula.id === editForm.item?.id);
     if (!oldFormula) return;
     const updated = { ...oldFormula, name: editForm.name.trim(), lab: editForm.lab.trim(), summary: editForm.summary.trim(), status: editForm.status };
-    setFormulations(prev => prev.map(formula => formula.id === updated.id ? updated : formula));
-    setRevisionHistory(prev => [{
-      id: Date.now(), formulaName: updated.name, changedBy: "Sandy Torres Tavares", role: "Administradora / Pesquisadora", date: now(),
-      fieldChanged: "Dados da Formulação", oldValue: `${oldFormula.name} | ${oldFormula.summary}`, newValue: `${updated.name} | ${updated.summary}`,
-      reason: "Edição manual realizada no painel de gerenciamento."
-    }, ...prev]);
-    if (selectedFormula?.id === updated.id) setSelectedFormula(updated);
-    setEditForm({ item: null, name: "", lab: "", summary: "", status: "" });
+    setSavingEdit(true);
+    setEditError("");
+    try {
+      const savedFormula = await atualizarFormulacao(updated.id, updated);
+      setFormulations(prev => prev.map(formula => formula.id === savedFormula.id ? savedFormula : formula));
+      setRevisionHistory(prev => [{
+        id: Date.now(), formulaName: savedFormula.name, changedBy: "Sandy Torres Tavares", role: "Administradora / Pesquisadora", date: now(),
+        fieldChanged: "Dados da Formulação", oldValue: `${oldFormula.name} | ${oldFormula.summary}`, newValue: `${savedFormula.name} | ${savedFormula.summary}`,
+        reason: "Edição salva no banco de dados."
+      }, ...prev]);
+      if (selectedFormula?.id === savedFormula.id) setSelectedFormula(savedFormula);
+      setEditForm({ item: null, name: "", lab: "", summary: "", status: "" });
+    } catch (error) {
+      setEditError(error.message || "Não foi possível salvar as alterações.");
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   const handleDelete = formula => {
@@ -152,6 +166,6 @@ export default function App() {
       </main>
     </div>
     <DetalhesModal formula={selectedFormula} onClose={() => setSelectedFormula(null)} />
-    <EditarModal form={editForm} onChange={(field, value) => setEditForm(prev => ({ ...prev, [field]: value }))} onClose={() => setEditForm(prev => ({ ...prev, item: null }))} onSave={handleSaveEdit} />
+    <EditarModal form={editForm} error={editError} saving={savingEdit} onChange={(field, value) => setEditForm(prev => ({ ...prev, [field]: value }))} onClose={() => { if (!savingEdit) setEditForm(prev => ({ ...prev, item: null })); }} onSave={handleSaveEdit} />
   </div>;
 }
