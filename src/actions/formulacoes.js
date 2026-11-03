@@ -43,3 +43,17 @@ export const atualizarFormulacao = async (id, formulacao) => {
   });
   return mapBackendFormulation(await parseResponse(response));
 };
+
+export const excluirFormulacao = async id => {
+  const response = await fetch(`${API_BASE_URL}/formulacoes/${encodeURIComponent(id)}`, { method: "DELETE" });
+  return parseResponse(response);
+};
+
+export const excluirFormulacoesEmMassa = async ids => {
+  const response = await fetch(`${API_BASE_URL}/formulacoes`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids })
+  });
+  return parseResponse(response);
+};
