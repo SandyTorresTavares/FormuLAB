@@ -26,6 +26,19 @@
     ingredients,
     ingredientData,
     summary: record.resumo || "",
-    extractedText
+    extractedText,
+    audit: (Array.isArray(record.auditoria) ? record.auditoria : []).map((entry, index) => ({
+      id: `${record._id || record.codigo}-${index}-${entry.ocorridoEm || ""}`,
+      formulaId: record._id || record.codigo,
+      formulaName: record.nome || record.codigo || "Formulação",
+      changedBy: "Usuário do painel",
+      role: "Auditoria",
+      date: entry.ocorridoEm ? new Date(entry.ocorridoEm).toLocaleString("pt-BR") : "",
+      occurredAt: entry.ocorridoEm || "",
+      fieldChanged: entry.campo || "Alteração",
+      oldValue: entry.valorAnterior || "",
+      newValue: entry.valorNovo || "",
+      reason: entry.motivo || ""
+    }))
   };
 };

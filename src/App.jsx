@@ -6,19 +6,14 @@ import BuscaPage from "./components/pages/BuscaPage.jsx";
 import GerenciarPage from "./components/pages/GerenciarPage.jsx";
 import HistoricoPage from "./components/pages/HistoricoPage.jsx";
 import { DetalhesModal, EditarModal } from "./components/modals/FormulaModals.jsx";
-import { initialHistory, navItems } from "./constants/appData.js";
+import { navItems } from "./constants/appData.js";
 
 const now = () => new Date().toLocaleString("pt-BR");
-const showPercentage = value => {
-  if (!value) return "sem percentual";
-  const text = String(value);
-  return /\bqsp?\b/i.test(text) || text.endsWith("%") ? text : `${text}%`;
-};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("cadastrar");
   const [formulations, setFormulations] = useState([]);
-  const [revisionHistory, setRevisionHistory] = useState(initialHistory);
+  const [revisionHistory, setRevisionHistory] = useState([]);
   const [selectedFormula, setSelectedFormula] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -44,8 +39,11 @@ export default function App() {
   useEffect(() => {
     const controller = new AbortController();
     listarFormulacoes({ signal: controller.signal })
-      .then(setFormulations)
-      .then(() => setApiError(""))
+      .then(formulas => {
+        setFormulations(formulas);
+        setRevisionHistory(formulas.flatMap(formula => formula.audit || []).sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt)));
+        setApiError("");
+      })
       .catch(error => { if (error.name !== "AbortError") setApiError(error.message || "Falha ao conectar a API."); });
     return () => controller.abort();
   }, []);
@@ -102,10 +100,8 @@ export default function App() {
       const importedFormulas = result.formulacoes.length > 0 ? result.formulacoes : result.dados ? [result.dados] : [];
       if (importedFormulas.length > 0) {
         setFormulations(prev => [...importedFormulas, ...prev.filter(item => !importedFormulas.some(added => added.id === item.id))]);
-        setRevisionHistory(prev => [...importedFormulas.map((formula, index) => ({
-          id: Date.now() + index, formulaName: formula.name, changedBy: "Sandy Torres Tavares", role: "Administradora", date: now(),
-          fieldChanged: "Novo Cadastro", oldValue: "Não cadastrado", newValue: `${formula.ingredients.length} ingrediente(s) identificado(s)`, reason: "Cadastro inicial por envio de arquivo."
-        })), ...prev]);
+        const auditEvents = importedFormulas.flatMap(formula => formula.audit || []);
+        setRevisionHistory(prev => [...auditEvents, ...prev].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt)));
       }
       setApiError("");
       setUploadSuccess(result.mensagem || "Arquivo importado com sucesso.");
@@ -136,36 +132,10 @@ export default function App() {
     try {
       const savedFormula = await atualizarFormulacao(updated.id, updated);
       setFormulations(prev => prev.map(formula => formula.id === savedFormula.id ? savedFormula : formula));
-      const oldIngredients = oldFormula.ingredientData || [];
-      const newIngredients = savedFormula.ingredientData || [];
-      const matchedOldIngredients = new Set();
-      const ingredientEvents = newIngredients.flatMap((ingredient, index) => {
-        const oldIndexByName = oldIngredients.findIndex((item, oldIndex) => item.name === ingredient.name && !matchedOldIngredients.has(oldIndex));
-        const previousIndex = oldIndexByName >= 0 ? oldIndexByName : index < oldIngredients.length ? index : -1;
-        const previous = previousIndex >= 0 ? oldIngredients[previousIndex] : null;
-        if (previousIndex >= 0) matchedOldIngredients.add(previousIndex);
-        if (previous && previous.name === ingredient.name && previous.percentage === ingredient.percentage) return [];
-        return [{
-          id: Date.now() + index + 1, formulaName: savedFormula.name, changedBy: "Sandy Torres Tavares", role: "Administradora / Pesquisadora", date: now(),
-          fieldChanged: `Ingrediente: ${ingredient.name}`, oldValue: previous ? `${previous.name} (${previous.percentage ? showPercentage(previous.percentage) : "sem percentual"})` : "Ingrediente não cadastrado",
-          newValue: `${ingredient.name} (${showPercentage(ingredient.percentage)})`, reason: "Ingrediente ou percentual alterado e salvo no banco de dados."
-        }];
-      });
-      const removedIngredients = oldIngredients.flatMap((ingredient, index) => {
-        if (matchedOldIngredients.has(index)) return [];
-        return [{
-          id: Date.now() + newIngredients.length + index + 1, formulaName: savedFormula.name, changedBy: "Sandy Torres Tavares", role: "Administradora / Pesquisadora", date: now(),
-          fieldChanged: `Ingrediente removido: ${ingredient.name}`, oldValue: `${ingredient.name} (${showPercentage(ingredient.percentage)})`, newValue: "Removido",
-          reason: "Ingrediente removido e alteração salva no banco de dados."
-        }];
-      });
-      const dadosAlterados = oldFormula.name !== savedFormula.name || oldFormula.category !== savedFormula.category || oldFormula.lab !== savedFormula.lab || oldFormula.status !== savedFormula.status || oldFormula.summary !== savedFormula.summary;
-      const dadosEvent = dadosAlterados ? [{
-        id: Date.now(), formulaName: savedFormula.name, changedBy: "Sandy Torres Tavares", role: "Administradora / Pesquisadora", date: now(),
-        fieldChanged: "Dados da Formulação", oldValue: `${oldFormula.name} | ${oldFormula.category} | ${oldFormula.status}`, newValue: `${savedFormula.name} | ${savedFormula.category} | ${savedFormula.status}`,
-        reason: "Dados da formulação atualizados e salvos no banco de dados."
-      }] : [];
-      setRevisionHistory(prev => [...ingredientEvents, ...removedIngredients, ...dadosEvent, ...prev]);
+      setRevisionHistory(prev => [
+        ...(savedFormula.audit || []).slice().reverse(),
+        ...prev.filter(event => event.formulaId !== savedFormula.id)
+      ]);
       if (selectedFormula?.id === savedFormula.id) setSelectedFormula(savedFormula);
       setEditForm({ item: null, name: "", lab: "", summary: "", status: "" });
     } catch (error) {
@@ -182,11 +152,10 @@ export default function App() {
       const savedFormula = await atualizarFormulacao(formula.id, { ...formula, status });
       setFormulations(prev => prev.map(item => item.id === savedFormula.id ? savedFormula : item));
       setSelectedFormula(savedFormula);
-      setRevisionHistory(prev => [{
-        id: Date.now(), formulaName: savedFormula.name, changedBy: "Sandy Torres Tavares", role: "Revisora", date: now(),
-        fieldChanged: "Status da análise", oldValue: formula.status, newValue: savedFormula.status,
-        reason: "Status atualizado durante a revisão técnica."
-      }, ...prev]);
+      setRevisionHistory(prev => [
+        ...(savedFormula.audit || []).slice().reverse(),
+        ...prev.filter(event => event.formulaId !== savedFormula.id)
+      ]);
     } catch (error) {
       setReviewError(error.message || "Não foi possível atualizar o status da análise.");
     } finally {
