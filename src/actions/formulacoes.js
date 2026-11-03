@@ -15,9 +15,12 @@ export const listarFormulacoes = async ({ signal } = {}) => {
   return Array.isArray(data) ? data.map(mapBackendFormulation) : [];
 };
 
-export const importarArquivo = async file => {
+export const importarArquivo = async (file, metadata = {}) => {
   const formData = new FormData();
   formData.append("arquivo", file);
+  if (metadata.name?.trim()) formData.append("nome", metadata.name.trim());
+  if (metadata.category?.trim()) formData.append("categoriaProduto", metadata.category.trim());
+  if (metadata.lab?.trim()) formData.append("laboratorio", metadata.lab.trim());
   const response = await fetch(`${API_BASE_URL}/importar`, { method: "POST", body: formData });
   const data = await parseResponse(response);
   return { ...data, dados: data.dados ? mapBackendFormulation(data.dados) : null };
@@ -29,6 +32,7 @@ export const atualizarFormulacao = async (id, formulacao) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       nome: formulacao.name,
+      categoriaProduto: formulacao.category,
       laboratorio: formulacao.lab,
       resumo: formulacao.summary,
       status: formulacao.status

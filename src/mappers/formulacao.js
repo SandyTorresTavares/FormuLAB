@@ -11,12 +11,13 @@
   return {
     id: record._id || record.codigo,
     name: record.nome || record.codigo || "Formulação importada",
+    category: record.categoriaProduto || "Não categorizado",
     lab: record.laboratorio || "Não informado",
     type: record.tipoArquivo || "Importado",
     date: record.criadoEm ? new Date(record.criadoEm).toLocaleDateString("pt-BR") : new Date().toLocaleDateString("pt-BR"),
     status: record.status || "Aguardando Análise",
     ingredients,
-    summary: record.resumo || extractedText || "Formulação importada da API.",
+    summary: record.resumo || "",
     extractedText
   };
 };

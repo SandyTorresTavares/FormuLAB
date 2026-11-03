@@ -19,18 +19,22 @@ export default function App() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchGlobal, setSearchGlobal] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState("Todos");
+  const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [selectedLab, setSelectedLab] = useState("Todos");
   const [selectedIngredient, setSelectedIngredient] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [newName, setNewName] = useState("");
+  const [newCategory, setNewCategory] = useState("");
   const [newLab, setNewLab] = useState("Lab Sinergia Química");
   const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState("");
   const [processing, setProcessing] = useState(false);
   const [apiError, setApiError] = useState("");
-  const [editForm, setEditForm] = useState({ item: null, name: "", lab: "", summary: "", status: "" });
+  const [editForm, setEditForm] = useState({ item: null, name: "", category: "", lab: "", summary: "", status: "" });
   const [savingEdit, setSavingEdit] = useState(false);
   const [editError, setEditError] = useState("");
+  const [reviewSaving, setReviewSaving] = useState(false);
+  const [reviewError, setReviewError] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -42,17 +46,20 @@ export default function App() {
   }, []);
 
   const filteredFormulations = useMemo(() => formulations.filter(item => {
-    const term = searchGlobal.toLowerCase();
-    const globalMatch = item.name.toLowerCase().includes(term) || item.lab.toLowerCase().includes(term) || item.ingredients.some(i => i.toLowerCase().includes(term));
-    const productMatch = selectedProduct === "Todos" || item.name === selectedProduct;
+    const normalize = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const term = normalize(searchGlobal.trim());
+    const searchable = [item.name, item.category, item.lab, item.summary, item.extractedText, ...item.ingredients].map(normalize);
+    const globalMatch = !term || searchable.some(value => value.includes(term));
+    const categoryMatch = selectedCategory === "Todos" || item.category === selectedCategory;
     const labMatch = selectedLab === "Todos" || item.lab === selectedLab;
-    const ingredientMatch = !selectedIngredient || item.ingredients.some(i => i.toLowerCase().includes(selectedIngredient.toLowerCase()));
-    return globalMatch && productMatch && labMatch && ingredientMatch;
-  }), [formulations, searchGlobal, selectedProduct, selectedLab, selectedIngredient]);
+    const ingredientTerm = normalize(selectedIngredient.trim());
+    const ingredientMatch = !ingredientTerm || item.ingredients.some(ingredient => normalize(ingredient).includes(ingredientTerm));
+    return globalMatch && categoryMatch && labMatch && ingredientMatch;
+  }), [formulations, searchGlobal, selectedCategory, selectedLab, selectedIngredient]);
 
   const resetFilters = () => {
     setSearchGlobal("");
-    setSelectedProduct("Todos");
+    setSelectedCategory("Todos");
     setSelectedLab("Todos");
     setSelectedIngredient("");
   };
@@ -86,7 +93,7 @@ export default function App() {
     setUploadError("");
     setUploadSuccess("");
     try {
-      const result = await importarArquivo(selectedFile);
+      const result = await importarArquivo(selectedFile, { name: newName, category: newCategory, lab: newLab });
       if (result.dados) {
         const newFormula = result.dados;
         setFormulations(prev => [newFormula, ...prev.filter(item => item.id !== newFormula.id)]);
@@ -98,6 +105,8 @@ export default function App() {
       setApiError("");
       setUploadSuccess(result.mensagem || "Arquivo importado com sucesso.");
       setSelectedFile(null);
+      setNewName("");
+      setNewCategory("");
       const input = document.getElementById("file-upload");
       if (input) input.value = "";
     } catch (error) {
@@ -109,14 +118,14 @@ export default function App() {
 
   const handleOpenEdit = formula => {
     setEditError("");
-    setEditForm({ item: formula, name: formula.name, lab: formula.lab, summary: formula.summary, status: formula.status });
+    setEditForm({ item: formula, name: formula.name, category: formula.category, lab: formula.lab, summary: formula.summary, status: formula.status });
   };
 
   const handleSaveEdit = async event => {
     event.preventDefault();
     const oldFormula = formulations.find(formula => formula.id === editForm.item?.id);
     if (!oldFormula) return;
-    const updated = { ...oldFormula, name: editForm.name.trim(), lab: editForm.lab.trim(), summary: editForm.summary.trim(), status: editForm.status };
+    const updated = { ...oldFormula, name: editForm.name.trim(), category: editForm.category.trim(), lab: editForm.lab.trim(), summary: editForm.summary.trim(), status: editForm.status };
     setSavingEdit(true);
     setEditError("");
     try {
@@ -133,6 +142,25 @@ export default function App() {
       setEditError(error.message || "Não foi possível salvar as alterações.");
     } finally {
       setSavingEdit(false);
+    }
+  };
+
+  const handleSetReviewStatus = async (formula, status) => {
+    setReviewSaving(true);
+    setReviewError("");
+    try {
+      const savedFormula = await atualizarFormulacao(formula.id, { ...formula, status });
+      setFormulations(prev => prev.map(item => item.id === savedFormula.id ? savedFormula : item));
+      setSelectedFormula(savedFormula);
+      setRevisionHistory(prev => [{
+        id: Date.now(), formulaName: savedFormula.name, changedBy: "Sandy Torres Tavares", role: "Revisora", date: now(),
+        fieldChanged: "Status da análise", oldValue: formula.status, newValue: savedFormula.status,
+        reason: "Status atualizado durante a revisão técnica."
+      }, ...prev]);
+    } catch (error) {
+      setReviewError(error.message || "Não foi possível atualizar o status da análise.");
+    } finally {
+      setReviewSaving(false);
     }
   };
 
@@ -159,13 +187,13 @@ export default function App() {
       <AppHeader pageTitle={pageTitle} activeTab={activeTab} onChange={changeTab} mobileMenuOpen={mobileMenuOpen} onToggleMobileMenu={() => setMobileMenuOpen(value => !value)} isUserMenuOpen={isUserMenuOpen} onToggleUserMenu={() => setIsUserMenuOpen(value => !value)} />
       <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
         {apiError && <div className="max-w-5xl mx-auto mb-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-xs">{apiError}</div>}
-        {activeTab === "cadastrar" && <CadastroPage selectedFile={selectedFile} onFileChange={handleFileChange} onClearFile={() => { setSelectedFile(null); const input = document.getElementById("file-upload"); if (input) input.value = ""; }} newLab={newLab} onLabChange={event => setNewLab(event.target.value)} uploadError={uploadError} uploadSuccess={uploadSuccess} processing={processing} onUpload={handleUpload} />}
-        {activeTab === "buscar" && <BuscaPage formulations={formulations} filteredFormulations={filteredFormulations} searchGlobal={searchGlobal} onSearchChange={setSearchGlobal} selectedProduct={selectedProduct} onProductChange={setSelectedProduct} selectedLab={selectedLab} onLabChange={setSelectedLab} selectedIngredient={selectedIngredient} onIngredientChange={setSelectedIngredient} onResetFilters={resetFilters} onInspect={setSelectedFormula} statusClass={statusClass} />}
+        {activeTab === "cadastrar" && <CadastroPage selectedFile={selectedFile} onFileChange={handleFileChange} onClearFile={() => { setSelectedFile(null); const input = document.getElementById("file-upload"); if (input) input.value = ""; }} newName={newName} onNameChange={event => setNewName(event.target.value)} newCategory={newCategory} onCategoryChange={event => setNewCategory(event.target.value)} newLab={newLab} onLabChange={event => setNewLab(event.target.value)} uploadError={uploadError} uploadSuccess={uploadSuccess} processing={processing} onUpload={handleUpload} />}
+        {activeTab === "buscar" && <BuscaPage formulations={formulations} filteredFormulations={filteredFormulations} searchGlobal={searchGlobal} onSearchChange={setSearchGlobal} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} selectedLab={selectedLab} onLabChange={setSelectedLab} selectedIngredient={selectedIngredient} onIngredientChange={setSelectedIngredient} onResetFilters={resetFilters} onInspect={setSelectedFormula} statusClass={statusClass} />}
         {activeTab === "gerenciar" && <GerenciarPage formulations={formulations} onDelete={handleDelete} onInspect={setSelectedFormula} onEdit={handleOpenEdit} statusClass={statusClass} />}
         {activeTab === "revisadas" && <HistoricoPage revisionHistory={revisionHistory} />}
       </main>
     </div>
-    <DetalhesModal formula={selectedFormula} onClose={() => setSelectedFormula(null)} />
+    <DetalhesModal formula={selectedFormula} onClose={() => { setSelectedFormula(null); setReviewError(""); }} onSetStatus={handleSetReviewStatus} reviewSaving={reviewSaving} reviewError={reviewError} />
     <EditarModal form={editForm} error={editError} saving={savingEdit} onChange={(field, value) => setEditForm(prev => ({ ...prev, [field]: value }))} onClose={() => { if (!savingEdit) setEditForm(prev => ({ ...prev, item: null })); }} onSave={handleSaveEdit} />
   </div>;
 }
