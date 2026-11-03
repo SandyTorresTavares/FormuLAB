@@ -1,4 +1,4 @@
-﻿import { X } from "lucide-react";
+﻿import { Plus, Trash2, X } from "lucide-react";
 
 const reviewStatuses = ["Em Análise", "Aprovado", "Reprovado"];
 
@@ -12,7 +12,7 @@ export function DetalhesModal({ formula, onClose, onSetStatus, reviewSaving, rev
         {reviewError && <p role="alert" className="mt-3 text-rose-700">{reviewError}</p>}
       </section>
       <div><b className="uppercase text-[10px] text-slate-500">Resumo</b><p className="bg-slate-50 p-4 rounded-xl mt-2 leading-relaxed">{formula.summary || "Resumo ainda não cadastrado."}</p></div>
-      <div><b className="uppercase text-[10px] text-slate-500">Ingredientes</b><div className="flex flex-wrap gap-2 mt-2">{formula.ingredients.length > 0 ? formula.ingredients.map((ing, i) => <span key={i} className="bg-purple-50 text-purple-800 border border-purple-100 px-3 py-2 rounded-lg">{ing}</span>) : <p className="text-slate-400">Ingredientes ainda não identificados.</p>}</div></div>
+      <div><b className="uppercase text-[10px] text-slate-500">Ingredientes e percentuais</b><div className="flex flex-wrap gap-2 mt-2">{formula.ingredients.length > 0 ? formula.ingredients.map((ing, i) => <span key={i} className="bg-purple-50 text-purple-800 border border-purple-100 px-3 py-2 rounded-lg">{ing}</span>) : <p className="text-slate-400">Ingredientes ainda não identificados.</p>}</div></div>
       <div><b className="uppercase text-[10px] text-slate-500">Texto extraído do arquivo</b>{formula.extractedText ? <pre className="max-h-80 overflow-y-auto bg-slate-900 text-slate-100 p-4 rounded-xl mt-2 whitespace-pre-wrap break-words font-mono text-[11px]">{formula.extractedText}</pre> : <p className="mt-2 text-slate-400">Nenhum texto extraído.</p>}</div>
       <div><b className="text-slate-500">Arquivo original:</b><p className="mt-1">{formula.type}</p></div>
     </div><div className="p-4 border-t flex justify-end"><button onClick={onClose} className="bg-purple-600 text-white px-5 py-2 rounded-lg text-xs font-bold hover:bg-purple-700">Fechar</button></div>
@@ -21,13 +21,20 @@ export function DetalhesModal({ formula, onClose, onSetStatus, reviewSaving, rev
 
 export function EditarModal({ form, error, saving, onChange, onClose, onSave }) {
   if (!form.item) return null;
-  return <div className="modal-backdrop fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"><form onSubmit={onSave} className="modal-panel bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
+  const updateIngredient = (index, field, value) => onChange("ingredientData", form.ingredientData.map((item, itemIndex) => itemIndex === index ? { ...item, [field]: value } : item));
+  const removeIngredient = index => onChange("ingredientData", form.ingredientData.filter((_, itemIndex) => itemIndex !== index));
+
+  return <div className="modal-backdrop fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"><form onSubmit={onSave} className="modal-panel bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
     <div className="p-5 border-b flex justify-between items-center"><h3 className="font-bold">Editar produto e formulação</h3><button type="button" onClick={onClose} disabled={saving} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"><X /></button></div>
-    <div className="p-6 space-y-4 text-xs"><div><label className="font-bold block mb-2">Nome do produto ou formulação</label><input required value={form.name} onChange={e => onChange("name", e.target.value)} className="w-full border rounded-lg p-3 outline-none focus:border-purple-500" /></div>
+    <div className="p-6 space-y-4 text-xs overflow-y-auto"><div><label className="font-bold block mb-2">Nome do produto ou formulação</label><input required value={form.name} onChange={e => onChange("name", e.target.value)} className="w-full border rounded-lg p-3 outline-none focus:border-purple-500" /></div>
       <div><label className="font-bold block mb-2">Categoria do produto</label><input value={form.category} onChange={e => onChange("category", e.target.value)} placeholder="Ex.: detergente, limpador, cosmético" className="w-full border rounded-lg p-3 outline-none focus:border-purple-500" /></div>
       <div><label className="font-bold block mb-2">Laboratório</label><input required value={form.lab} onChange={e => onChange("lab", e.target.value)} className="w-full border rounded-lg p-3 outline-none focus:border-purple-500" /></div>
       <div><label className="font-bold block mb-2">Status da análise</label><select value={form.status} onChange={e => onChange("status", e.target.value)} className="w-full border rounded-lg p-3"><option>Aguardando Análise</option><option>Em Análise</option><option>Aprovado</option><option>Reprovado</option></select></div>
-      <div><label className="font-bold block mb-2">Resumo / Especificações</label><textarea rows={5} value={form.summary} onChange={e => onChange("summary", e.target.value)} placeholder="Escreva um resumo curto para aparecer na listagem." className="w-full border rounded-lg p-3 outline-none focus:border-purple-500 resize-y" /></div>
+      <section><div className="flex items-center justify-between mb-2"><label className="font-bold">Ingredientes e percentuais</label><span className="text-[10px] text-slate-400">Aceita faixa, por exemplo 0,2 a 0,4, ou QSP</span></div>
+        <div className="space-y-2">{form.ingredientData.map((ingredient, index) => <div key={ingredient.id || index} className="grid grid-cols-[minmax(0,1fr)_150px_36px] gap-2 items-center"><input required aria-label={`Nome do ingrediente ${index + 1}`} value={ingredient.name} onChange={e => updateIngredient(index, "name", e.target.value)} placeholder="Ingrediente" className="min-w-0 border rounded-lg p-2.5 outline-none focus:border-purple-500" /><input required aria-label={`Percentual do ingrediente ${index + 1}`} value={ingredient.percentage} onChange={e => updateIngredient(index, "percentage", e.target.value)} placeholder="% ou QSP" className="border rounded-lg p-2.5 outline-none focus:border-purple-500" /><button type="button" onClick={() => removeIngredient(index)} title="Remover ingrediente" className="rounded-lg p-2 text-rose-500 hover:bg-rose-50"><Trash2 size={16} /></button></div>)}</div>
+        <button type="button" onClick={() => onChange("ingredientData", [...form.ingredientData, { name: "", percentage: "" }])} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-purple-200 px-3 py-2 font-semibold text-purple-700 hover:bg-purple-50"><Plus size={14} />Adicionar ingrediente</button>
+      </section>
+      <div><label className="font-bold block mb-2">Resumo / Especificações</label><textarea rows={4} value={form.summary} onChange={e => onChange("summary", e.target.value)} placeholder="Escreva um resumo curto para aparecer na listagem." className="w-full border rounded-lg p-3 outline-none focus:border-purple-500 resize-y" /></div>
     </div>{error && <p role="alert" className="mx-6 mb-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error}</p>}<div className="p-4 border-t bg-slate-50 flex justify-end gap-2"><button type="button" onClick={onClose} disabled={saving} className="px-4 py-2 border bg-white rounded-lg text-xs font-bold hover:bg-slate-100 disabled:opacity-50">Cancelar</button><button type="submit" disabled={saving} className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 disabled:cursor-wait disabled:opacity-60">{saving ? "Salvando..." : "Salvar Alterações"}</button></div>
   </form></div>;
 }

@@ -3,9 +3,7 @@ import { mapBackendFormulation } from "../mappers/formulacao.js";
 
 const parseResponse = async response => {
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(data.erro || data.mensagem || "A requisição à API falhou.");
-  }
+  if (!response.ok) throw new Error(data.erro || data.mensagem || "A requisição à API falhou.");
   return data;
 };
 
@@ -23,7 +21,11 @@ export const importarArquivo = async (file, metadata = {}) => {
   if (metadata.lab?.trim()) formData.append("laboratorio", metadata.lab.trim());
   const response = await fetch(`${API_BASE_URL}/importar`, { method: "POST", body: formData });
   const data = await parseResponse(response);
-  return { ...data, dados: data.dados ? mapBackendFormulation(data.dados) : null };
+  return {
+    ...data,
+    dados: data.dados ? mapBackendFormulation(data.dados) : null,
+    formulacoes: Array.isArray(data.formulacoes) ? data.formulacoes.map(mapBackendFormulation) : []
+  };
 };
 
 export const atualizarFormulacao = async (id, formulacao) => {
@@ -35,7 +37,8 @@ export const atualizarFormulacao = async (id, formulacao) => {
       categoriaProduto: formulacao.category,
       laboratorio: formulacao.lab,
       resumo: formulacao.summary,
-      status: formulacao.status
+      status: formulacao.status,
+      ingredientes: (formulacao.ingredientData || []).map(item => ({ nome: item.name, percentagem: item.percentage }))
     })
   });
   return mapBackendFormulation(await parseResponse(response));

@@ -9,6 +9,11 @@ import { DetalhesModal, EditarModal } from "./components/modals/FormulaModals.js
 import { initialHistory, navItems } from "./constants/appData.js";
 
 const now = () => new Date().toLocaleString("pt-BR");
+const showPercentage = value => {
+  if (!value) return "sem percentual";
+  const text = String(value);
+  return /\bqsp?\b/i.test(text) || text.endsWith("%") ? text : `${text}%`;
+};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("cadastrar");
@@ -30,7 +35,7 @@ export default function App() {
   const [uploadSuccess, setUploadSuccess] = useState("");
   const [processing, setProcessing] = useState(false);
   const [apiError, setApiError] = useState("");
-  const [editForm, setEditForm] = useState({ item: null, name: "", category: "", lab: "", summary: "", status: "" });
+  const [editForm, setEditForm] = useState({ item: null, name: "", category: "", lab: "", summary: "", status: "", ingredientData: [] });
   const [savingEdit, setSavingEdit] = useState(false);
   const [editError, setEditError] = useState("");
   const [reviewSaving, setReviewSaving] = useState(false);
@@ -94,13 +99,13 @@ export default function App() {
     setUploadSuccess("");
     try {
       const result = await importarArquivo(selectedFile, { name: newName, category: newCategory, lab: newLab });
-      if (result.dados) {
-        const newFormula = result.dados;
-        setFormulations(prev => [newFormula, ...prev.filter(item => item.id !== newFormula.id)]);
-        setRevisionHistory(prev => [{
-          id: Date.now(), formulaName: newFormula.name, changedBy: "Sandy Torres Tavares", role: "Administradora", date: now(),
-          fieldChanged: "Novo Cadastro", oldValue: "Não cadastrado", newValue: "Arquivo processado e salvo na API", reason: "Cadastro inicial por envio de arquivo."
-        }, ...prev]);
+      const importedFormulas = result.formulacoes.length > 0 ? result.formulacoes : result.dados ? [result.dados] : [];
+      if (importedFormulas.length > 0) {
+        setFormulations(prev => [...importedFormulas, ...prev.filter(item => !importedFormulas.some(added => added.id === item.id))]);
+        setRevisionHistory(prev => [...importedFormulas.map((formula, index) => ({
+          id: Date.now() + index, formulaName: formula.name, changedBy: "Sandy Torres Tavares", role: "Administradora", date: now(),
+          fieldChanged: "Novo Cadastro", oldValue: "Não cadastrado", newValue: `${formula.ingredients.length} ingrediente(s) identificado(s)`, reason: "Cadastro inicial por envio de arquivo."
+        })), ...prev]);
       }
       setApiError("");
       setUploadSuccess(result.mensagem || "Arquivo importado com sucesso.");
@@ -118,24 +123,49 @@ export default function App() {
 
   const handleOpenEdit = formula => {
     setEditError("");
-    setEditForm({ item: formula, name: formula.name, category: formula.category, lab: formula.lab, summary: formula.summary, status: formula.status });
+    setEditForm({ item: formula, name: formula.name, category: formula.category, lab: formula.lab, summary: formula.summary, status: formula.status, ingredientData: formula.ingredientData.map(item => ({ ...item })) });
   };
 
   const handleSaveEdit = async event => {
     event.preventDefault();
     const oldFormula = formulations.find(formula => formula.id === editForm.item?.id);
     if (!oldFormula) return;
-    const updated = { ...oldFormula, name: editForm.name.trim(), category: editForm.category.trim(), lab: editForm.lab.trim(), summary: editForm.summary.trim(), status: editForm.status };
+    const updated = { ...oldFormula, name: editForm.name.trim(), category: editForm.category.trim(), lab: editForm.lab.trim(), summary: editForm.summary.trim(), status: editForm.status, ingredientData: editForm.ingredientData };
     setSavingEdit(true);
     setEditError("");
     try {
       const savedFormula = await atualizarFormulacao(updated.id, updated);
       setFormulations(prev => prev.map(formula => formula.id === savedFormula.id ? savedFormula : formula));
-      setRevisionHistory(prev => [{
+      const oldIngredients = oldFormula.ingredientData || [];
+      const newIngredients = savedFormula.ingredientData || [];
+      const matchedOldIngredients = new Set();
+      const ingredientEvents = newIngredients.flatMap((ingredient, index) => {
+        const oldIndexByName = oldIngredients.findIndex((item, oldIndex) => item.name === ingredient.name && !matchedOldIngredients.has(oldIndex));
+        const previousIndex = oldIndexByName >= 0 ? oldIndexByName : index < oldIngredients.length ? index : -1;
+        const previous = previousIndex >= 0 ? oldIngredients[previousIndex] : null;
+        if (previousIndex >= 0) matchedOldIngredients.add(previousIndex);
+        if (previous && previous.name === ingredient.name && previous.percentage === ingredient.percentage) return [];
+        return [{
+          id: Date.now() + index + 1, formulaName: savedFormula.name, changedBy: "Sandy Torres Tavares", role: "Administradora / Pesquisadora", date: now(),
+          fieldChanged: `Ingrediente: ${ingredient.name}`, oldValue: previous ? `${previous.name} (${previous.percentage ? showPercentage(previous.percentage) : "sem percentual"})` : "Ingrediente não cadastrado",
+          newValue: `${ingredient.name} (${showPercentage(ingredient.percentage)})`, reason: "Ingrediente ou percentual alterado e salvo no banco de dados."
+        }];
+      });
+      const removedIngredients = oldIngredients.flatMap((ingredient, index) => {
+        if (matchedOldIngredients.has(index)) return [];
+        return [{
+          id: Date.now() + newIngredients.length + index + 1, formulaName: savedFormula.name, changedBy: "Sandy Torres Tavares", role: "Administradora / Pesquisadora", date: now(),
+          fieldChanged: `Ingrediente removido: ${ingredient.name}`, oldValue: `${ingredient.name} (${showPercentage(ingredient.percentage)})`, newValue: "Removido",
+          reason: "Ingrediente removido e alteração salva no banco de dados."
+        }];
+      });
+      const dadosAlterados = oldFormula.name !== savedFormula.name || oldFormula.category !== savedFormula.category || oldFormula.lab !== savedFormula.lab || oldFormula.status !== savedFormula.status || oldFormula.summary !== savedFormula.summary;
+      const dadosEvent = dadosAlterados ? [{
         id: Date.now(), formulaName: savedFormula.name, changedBy: "Sandy Torres Tavares", role: "Administradora / Pesquisadora", date: now(),
-        fieldChanged: "Dados da Formulação", oldValue: `${oldFormula.name} | ${oldFormula.summary}`, newValue: `${savedFormula.name} | ${savedFormula.summary}`,
-        reason: "Edição salva no banco de dados."
-      }, ...prev]);
+        fieldChanged: "Dados da Formulação", oldValue: `${oldFormula.name} | ${oldFormula.category} | ${oldFormula.status}`, newValue: `${savedFormula.name} | ${savedFormula.category} | ${savedFormula.status}`,
+        reason: "Dados da formulação atualizados e salvos no banco de dados."
+      }] : [];
+      setRevisionHistory(prev => [...ingredientEvents, ...removedIngredients, ...dadosEvent, ...prev]);
       if (selectedFormula?.id === savedFormula.id) setSelectedFormula(savedFormula);
       setEditForm({ item: null, name: "", lab: "", summary: "", status: "" });
     } catch (error) {
